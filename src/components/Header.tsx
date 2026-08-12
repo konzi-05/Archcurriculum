@@ -32,8 +32,8 @@ export const Header: React.FC<HeaderProps> = ({
             
             {/* Logo & Brand */}
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center font-bold text-white shadow-sm shadow-blue-200 dark:shadow-none shrink-0">
-                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-sm shadow-blue-200 dark:shadow-none shrink-0 border border-blue-400/30">
+                <img src="/favicon.svg" alt="Curriculum Architect Logo" className="w-full h-full object-cover" />
               </div>
               <div className="flex items-center space-x-1.5 sm:space-x-2">
                 <h1 className="text-xs sm:text-base font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
