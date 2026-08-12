@@ -66,27 +66,27 @@ export const GraduationRoadmapView: React.FC<GraduationRoadmapViewProps> = ({
   const prereqConflicts = getPrerequisiteConflicts();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       
       {/* Banner & Control Actions */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xs transition-colors">
         <div>
-          <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800 px-3 py-1 rounded-full mb-2">
+          <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800 px-3.5 py-1.5 rounded-full mb-3">
             <Layers className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             <span>4-Year / 8-Semester Graduation Matrix</span>
           </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
             Comprehensive B.Tech IT Curriculum Roadmap
           </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
-            Target Career Track: <strong className="text-blue-600 dark:text-blue-400">{targetTrack.title}</strong>. Customize semester placements, review prerequisite flows, and manage full graduation compliance.
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
+            Target Career Track: <strong className="text-blue-600 dark:text-blue-400 font-bold">{targetTrack.title}</strong>. Customize semester placements, review prerequisite flows, and manage full graduation compliance.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 shrink-0">
+        <div className="flex items-center space-x-3 shrink-0">
           <button
             onClick={onAutoGenerateRoadmap}
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-xs font-bold transition-all shadow-xs shadow-indigo-200 dark:shadow-none"
+            className="flex items-center space-x-2 px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white text-xs font-bold transition-all shadow-xs shadow-indigo-200 dark:shadow-none"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Auto-Sequence Track Electives</span>

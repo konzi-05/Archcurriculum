@@ -1,12 +1,12 @@
 import React from 'react';
-import { GraduationCap, Sparkles, Github, MessageSquare, Compass, SlidersHorizontal, BookOpen, Sun, Moon } from 'lucide-react';
+import { GraduationCap, Sparkles, MessageSquare, Compass, SlidersHorizontal, BookOpen, Sun, Moon, HelpCircle } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: 'recommendations' | 'curriculum' | 'career' | 'planner';
   setActiveTab: (tab: 'recommendations' | 'curriculum' | 'career' | 'planner') => void;
   onOpenProfile: () => void;
   onOpenCounselor: () => void;
-  onOpenGithubGuide: () => void;
+  onOpenWalkthrough: () => void;
   selectedPlanCount: number;
   totalCredits: number;
   theme: 'light' | 'dark';
@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   onOpenProfile,
   onOpenCounselor,
-  onOpenGithubGuide,
+  onOpenWalkthrough,
   selectedPlanCount,
   totalCredits,
   theme,
@@ -105,13 +105,13 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Action Tools */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
             
             {/* Light / Dark Mode Toggle */}
             <button
               id="btn-theme-toggle"
               onClick={onToggleTheme}
-              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center shadow-xs"
+              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center shadow-xs"
               title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
             >
               {theme === 'dark' ? (
@@ -124,7 +124,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="btn-ai-counselor"
               onClick={onOpenCounselor}
-              className="flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
+              className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm shadow-indigo-200 dark:shadow-none"
               title="Academic & Career Counselor"
             >
               <MessageSquare className="w-3.5 h-3.5" />
@@ -134,19 +134,19 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="btn-edit-profile"
               onClick={onOpenProfile}
-              className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-xs"
+              className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-xs"
             >
               Profile
             </button>
 
             <button
-              id="btn-github-deploy"
-              onClick={onOpenGithubGuide}
-              className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 shadow-xs"
-              title="Deploy or Export App"
+              id="btn-app-walkthrough"
+              onClick={onOpenWalkthrough}
+              className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-2 shadow-xs"
+              title="App Walkthrough & Demo"
             >
-              <Github className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Export</span>
+              <HelpCircle className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span className="hidden sm:inline">Walkthrough</span>
             </button>
 
           </div>

@@ -25,50 +25,50 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
   }));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       
       {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-xs transition-colors">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xs transition-colors">
         <div>
-          <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800 px-3 py-1 rounded-full mb-2">
+          <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800 px-3.5 py-1.5 rounded-full mb-3">
             <Target className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             <span>Target Role Industry Skill Matrix</span>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{currentTrack.title} Skill Matrix</h2>
-          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-2xl leading-relaxed">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{currentTrack.title} Skill Matrix</h2>
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
             {currentTrack.description}
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 bg-blue-50/80 dark:bg-slate-800/80 p-3.5 rounded-xl border border-blue-200/80 dark:border-slate-700 text-xs flex-shrink-0">
+        <div className="flex items-center space-x-4 bg-blue-50/80 dark:bg-slate-800/80 p-4 rounded-2xl border border-blue-200/80 dark:border-slate-700 text-xs flex-shrink-0">
           <div>
             <div className="text-[10px] text-blue-700 dark:text-blue-300 uppercase tracking-wider font-bold">Target Role</div>
-            <div className="font-extrabold text-slate-900 dark:text-white text-sm">{currentTrack.targetRole}</div>
-            <div className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-0.5">Avg Salary Benchmark: {currentTrack.averageSalaryUSD}</div>
+            <div className="font-extrabold text-slate-900 dark:text-white text-sm mt-0.5">{currentTrack.targetRole}</div>
+            <div className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-1">Avg Salary Benchmark: {currentTrack.averageSalaryUSD}</div>
           </div>
         </div>
       </div>
 
       {/* Track Selector Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-4 rounded-2xl shadow-xs transition-colors">
-        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-2.5 uppercase tracking-wide">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xs transition-colors space-y-3">
+        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
           Select / Switch B.Tech IT Specialization Track:
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           {CAREER_TRACKS.map(track => {
             const isSelected = track.id === currentTrack.id;
             return (
               <button
                 key={track.id}
                 onClick={() => onChangeCareerTrack(track.id)}
-                className={`p-3 rounded-xl border text-left transition-all text-xs ${
+                className={`p-3.5 sm:p-4 rounded-xl border text-left transition-all text-xs ${
                   isSelected
                     ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-xs'
                     : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
                 <div className="truncate font-bold">{track.title}</div>
-                <div className={`text-[11px] mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>{track.industryDemand} Demand</div>
+                <div className={`text-[11px] mt-1 ${isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>{track.industryDemand} Demand</div>
               </button>
             );
           })}
@@ -76,13 +76,13 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
       </div>
 
       {/* Visual Analytics Grid: Radar Chart & Bar Visualizer */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         
         {/* Radar Chart */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-xs transition-colors">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-7 flex flex-col justify-between shadow-xs transition-colors">
           <div>
-            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide mb-1">Competency Radar Diagram</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide mb-1.5">Competency Radar Diagram</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
               Visual comparison of student proficiency vs IEEE/ACM benchmark level (85%).
             </p>
           </div>
@@ -103,18 +103,18 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
         </div>
 
         {/* Skill Gap Progress List */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-colors">
-          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide mb-1">Skill Gap Coverage Analysis</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-xs transition-colors">
+          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide mb-1.5">Skill Gap Coverage Analysis</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
             Core competencies required for {currentTrack.title} and course mappings.
           </p>
 
-          <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-1.5">
             {skillGapMatrix.map(item => {
               const coveragePct = Math.round((item.currentLevel / item.requiredLevel) * 100);
 
               return (
-                <div key={item.skill} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 text-xs">
+                <div key={item.skill} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 text-xs space-y-1.5">
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-bold text-slate-900 dark:text-slate-100">{item.skill}</span>
                     <span className="text-xs text-blue-700 dark:text-blue-400 font-bold">
@@ -123,7 +123,7 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
                   </div>
 
                   {/* High Density Progress Bar */}
-                  <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
+                  <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden my-1.5">
                     <div
                       className={`h-full rounded-full transition-all ${
                         coveragePct >= 90 ? 'bg-emerald-500' : coveragePct >= 60 ? 'bg-blue-600' : 'bg-amber-500'
@@ -133,7 +133,7 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
                   </div>
 
                   {/* Covering Courses */}
-                  <div className="text-xs text-slate-600 dark:text-slate-300 flex items-start space-x-1 font-medium">
+                  <div className="text-xs text-slate-600 dark:text-slate-300 flex items-start space-x-1.5 font-medium pt-0.5">
                     <BookOpen className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
                     <span>
                       <strong className="text-slate-800 dark:text-slate-200">Matching Modules:</strong> {item.coveredByRecommendedCourses.length > 0 ? item.coveredByRecommendedCourses.join(', ') : 'Covered in upper semester core labs'}

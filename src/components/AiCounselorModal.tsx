@@ -87,31 +87,31 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onC
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-2xl h-[80vh] overflow-hidden flex flex-col shadow-2xl text-slate-900 dark:text-slate-100 transition-colors">
         
         {/* Header */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/80">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+        <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/80">
+          <div className="flex items-center space-x-3.5">
+            <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Academic & Career Counselor</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Personalized degree & career planning advice</p>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Academic & Career Counselor</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Personalized degree & career planning advice</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Message Log */}
-        <div className="p-4 space-y-3 overflow-y-auto flex-1 text-xs bg-slate-50/40 dark:bg-slate-950/40">
+        <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs bg-slate-50/40 dark:bg-slate-950/40">
           {messages.map(msg => (
             <div
               key={msg.id}
-              className={`flex items-start space-x-2.5 ${msg.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}
+              className={`flex items-start gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}
             >
               <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
                 msg.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
@@ -119,13 +119,13 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onC
                 {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
               </div>
 
-              <div className={`p-3.5 rounded-2xl max-w-[80%] ${
+              <div className={`p-4 rounded-2xl max-w-[82%] ${
                 msg.sender === 'user'
                   ? 'bg-blue-600 text-white rounded-tr-none shadow-xs'
                   : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-tl-none whitespace-pre-line shadow-xs'
               }`}>
                 <p className="leading-relaxed">{msg.text}</p>
-                <span className={`block text-[10px] mt-1 text-right font-medium ${msg.sender === 'user' ? 'text-blue-100' : 'text-slate-400 dark:text-slate-500'}`}>
+                <span className={`block text-[10px] mt-1.5 text-right font-medium ${msg.sender === 'user' ? 'text-blue-100' : 'text-slate-400 dark:text-slate-500'}`}>
                   {msg.timestamp}
                 </span>
               </div>
@@ -141,13 +141,13 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onC
         </div>
 
         {/* Sample Suggestions */}
-        <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 overflow-x-auto flex items-center space-x-2 text-xs">
-          <span className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase flex-shrink-0">Prompts:</span>
+        <div className="px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 overflow-x-auto flex items-center gap-2 text-xs">
+          <span className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase flex-shrink-0 mr-1">Prompts:</span>
           {sampleQueries.map((q, idx) => (
             <button
               key={idx}
               onClick={() => setInputQuery(q)}
-              className="px-3 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap transition-all shadow-2xs font-medium"
+              className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap transition-all shadow-2xs font-medium"
             >
               {q}
             </button>
@@ -155,18 +155,18 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onC
         </div>
 
         {/* Query Input */}
-        <form onSubmit={handleSendMessage} className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center space-x-2">
+        <form onSubmit={handleSendMessage} className="p-4 sm:p-5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-3">
           <input
             type="text"
             value={inputQuery}
             onChange={e => setInputQuery(e.target.value)}
             placeholder="Ask a question about electives, prerequisites, or career tracks..."
-            className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800"
+            className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800"
           />
           <button
             type="submit"
             disabled={!inputQuery.trim() || isLoading}
-            className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all disabled:opacity-50 shadow-xs"
+            className="p-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all disabled:opacity-50 shadow-xs flex-shrink-0"
           >
             <Send className="w-4 h-4" />
           </button>

@@ -122,13 +122,13 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       
       {/* Sub-Navigation Tabs */}
-      <div className="flex items-center space-x-1.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-1.5 rounded-2xl shadow-xs overflow-x-auto transition-colors">
+      <div className="flex items-center space-x-2 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-2.5 rounded-2xl shadow-xs overflow-x-auto transition-colors">
         <button
           onClick={() => setPlannerTab('ACTIVE')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             plannerTab === 'ACTIVE'
               ? 'bg-blue-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -140,7 +140,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
 
         <button
           onClick={() => setPlannerTab('ROADMAP')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             plannerTab === 'ROADMAP'
               ? 'bg-blue-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -152,7 +152,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
 
         <button
           onClick={() => setPlannerTab('GPA')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             plannerTab === 'GPA'
               ? 'bg-blue-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -164,7 +164,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
 
         <button
           onClick={() => setPlannerTab('TIMETABLE')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             plannerTab === 'TIMETABLE'
               ? 'bg-blue-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -176,7 +176,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
 
         <button
           onClick={() => setPlannerTab('GOALS')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             plannerTab === 'GOALS'
               ? 'bg-blue-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -226,25 +226,25 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
       )}
 
       {plannerTab === 'ACTIVE' && (
-        <div className="space-y-5">
+        <div className="space-y-6 sm:space-y-8">
           {/* Header Box */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs transition-colors">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xs transition-colors">
             <div>
-              <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800 px-3 py-1 rounded-full mb-2">
+              <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800 px-3.5 py-1.5 rounded-full mb-3">
                 <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 <span>Credit & Workload Optimizer</span>
               </div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Semester {studentProfile.currentSemester} Course Schedule Planner</h2>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Semester {studentProfile.currentSemester} Course Schedule Planner</h2>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
                 Combine required core subjects with top-recommended electives while managing your credit limits and study workload.
               </p>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2.5">
               {selectedCourses.length > 0 && (
                 <button
                   onClick={onClearPlan}
-                  className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors"
                 >
                   Clear
                 </button>
@@ -372,9 +372,9 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
 
           {/* Academic Advice Report Section */}
           {aiInsight && (
-            <div className="bg-gradient-to-br from-blue-50/50 via-white to-indigo-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border border-blue-200/90 dark:border-blue-900/60 rounded-2xl p-6 space-y-4 shadow-xs transition-colors">
-              <div className="flex items-center justify-between border-b border-blue-100 dark:border-slate-800 pb-3">
-                <div className="flex items-center space-x-2">
+            <div className="bg-gradient-to-br from-blue-50/50 via-white to-indigo-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border border-blue-200/90 dark:border-blue-900/60 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs transition-colors">
+              <div className="flex items-center justify-between border-b border-blue-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center space-x-2.5">
                   <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide">Academic Strategy & Guidance</h3>
                 </div>
@@ -385,33 +385,33 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
               </div>
 
               {/* Summary */}
-              <div>
+              <div className="space-y-1.5">
                 <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Plan Overview</h4>
-                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-white/80 dark:bg-slate-800/80 p-3.5 rounded-xl border border-blue-100/80 dark:border-slate-700">
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-white/80 dark:bg-slate-800/80 p-4 rounded-xl border border-blue-100/80 dark:border-slate-700">
                   {aiInsight.summary}
                 </p>
               </div>
 
               {/* Strategy */}
-              <div>
+              <div className="space-y-1.5">
                 <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Recommended Strategy</h4>
-                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-white/80 dark:bg-slate-800/80 p-3.5 rounded-xl border border-blue-100/80 dark:border-slate-700">
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-white/80 dark:bg-slate-800/80 p-4 rounded-xl border border-blue-100/80 dark:border-slate-700">
                   {aiInsight.semesterStrategy}
                 </p>
               </div>
 
               {/* Grid: Action Steps & Certifications */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 text-xs">
                 
                 {/* Actionable Steps */}
-                <div className="bg-white/80 dark:bg-slate-800/80 p-4 rounded-xl border border-blue-100/80 dark:border-slate-700">
-                  <h4 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-1.5 text-xs">
+                <div className="bg-white/80 dark:bg-slate-800/80 p-4.5 sm:p-5 rounded-xl border border-blue-100/80 dark:border-slate-700 space-y-2">
+                  <h4 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2 text-xs">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Actionable Steps</span>
                   </h4>
-                  <ul className="space-y-1.5 text-slate-700 dark:text-slate-300 text-xs">
+                  <ul className="space-y-2 text-slate-700 dark:text-slate-300 text-xs">
                     {aiInsight.actionableSteps.map((step, idx) => (
-                      <li key={idx} className="flex items-start space-x-2">
+                      <li key={idx} className="flex items-start space-x-2 leading-relaxed">
                         <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
                         <span>{step}</span>
                       </li>
@@ -420,14 +420,14 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                 </div>
 
                 {/* Industry Certifications */}
-                <div className="bg-white/80 dark:bg-slate-800/80 p-4 rounded-xl border border-blue-100/80 dark:border-slate-700">
-                  <h4 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-1.5 text-xs">
+                <div className="bg-white/80 dark:bg-slate-800/80 p-4.5 sm:p-5 rounded-xl border border-blue-100/80 dark:border-slate-700 space-y-2">
+                  <h4 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2 text-xs">
                     <Award className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                     <span>Suggested Certifications</span>
                   </h4>
-                  <ul className="space-y-1.5 text-slate-700 dark:text-slate-300 text-xs">
+                  <ul className="space-y-2 text-slate-700 dark:text-slate-300 text-xs">
                     {aiInsight.suggestedCertifications.map((cert, idx) => (
-                      <li key={idx} className="flex items-start space-x-2">
+                      <li key={idx} className="flex items-start space-x-2 leading-relaxed">
                         <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
                         <span>{cert}</span>
                       </li>
@@ -438,7 +438,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
               </div>
 
               {/* Industry Trends */}
-              <div className="text-xs text-slate-600 dark:text-slate-400 pt-2 border-t border-blue-100 dark:border-slate-800">
+              <div className="text-xs text-slate-600 dark:text-slate-400 pt-3 border-t border-blue-100 dark:border-slate-800 leading-relaxed">
                 <strong className="text-slate-800 dark:text-slate-200">Market Trend Note:</strong> {aiInsight.industryTrends}
               </div>
 

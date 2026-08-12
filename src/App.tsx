@@ -11,7 +11,8 @@ import { CareerPathwayMatrix } from './components/CareerPathwayMatrix';
 import { SemesterPlanner } from './components/SemesterPlanner';
 import { SyllabusModal } from './components/SyllabusModal';
 import { AiCounselorModal } from './components/AiCounselorModal';
-import { GithubDeploymentModal } from './components/GithubDeploymentModal';
+import { WelcomePanel } from './components/WelcomePanel';
+import { WelcomeWalkthroughModal } from './components/WelcomeWalkthroughModal';
 
 export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -32,7 +33,7 @@ export default function App() {
   // Modals
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [isCounselorModalOpen, setIsCounselorModalOpen] = useState<boolean>(false);
-  const [isGithubGuideOpen, setIsGithubGuideOpen] = useState<boolean>(false);
+  const [isWalkthroughModalOpen, setIsWalkthroughModalOpen] = useState<boolean>(false);
   const [activeSyllabusCourse, setActiveSyllabusCourse] = useState<Course | null>(null);
 
   // Sync theme with document class and localStorage
@@ -149,7 +150,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         onOpenProfile={() => setIsProfileModalOpen(true)}
         onOpenCounselor={() => setIsCounselorModalOpen(true)}
-        onOpenGithubGuide={() => setIsGithubGuideOpen(true)}
+        onOpenWalkthrough={() => setIsWalkthroughModalOpen(true)}
         selectedPlanCount={selectedPlanCourseIds.length}
         totalCredits={recommendations.filter(r => selectedPlanCourseIds.includes(r.course.id)).reduce((sum, r) => sum + r.course.credits, 0)}
         theme={theme}
@@ -157,7 +158,15 @@ export default function App() {
       />
 
       {/* Main View Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
+        
+        {/* Welcome Section & Platform Introduction Banner */}
+        <WelcomePanel
+          onOpenWalkthrough={() => setIsWalkthroughModalOpen(true)}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenCounselor={() => setIsCounselorModalOpen(true)}
+          onLoadDemoProfile={handleSaveProfile}
+        />
         
         {activeTab === 'recommendations' && (
           <RecommendationDashboard
@@ -205,7 +214,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="py-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 text-xs text-slate-500 dark:text-slate-400 shrink-0 mt-8 transition-colors">
+      <footer className="py-6 sm:py-8 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 sm:px-8 text-xs text-slate-500 dark:text-slate-400 shrink-0 mt-12 sm:mt-16 transition-colors">
         <div className="max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-2">
           <span className="font-medium text-slate-600 dark:text-slate-300">B.Tech Information Technology Academic Planner • AICTE Model Curriculum</span>
           <span className="text-slate-400 dark:text-slate-500">Curriculum Architect</span>
@@ -228,9 +237,12 @@ export default function App() {
         />
       )}
 
-      {isGithubGuideOpen && (
-        <GithubDeploymentModal
-          onClose={() => setIsGithubGuideOpen(false)}
+      {isWalkthroughModalOpen && (
+        <WelcomeWalkthroughModal
+          onClose={() => setIsWalkthroughModalOpen(false)}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenCounselor={() => setIsCounselorModalOpen(true)}
+          onLoadDemoProfile={handleSaveProfile}
         />
       )}
 
