@@ -1,0 +1,57 @@
+{
+  "entities": {
+    "users": {
+      "title": "User Profile",
+      "description": "User account information and authentication profile",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "lastLoginAt": { "type": "string" }
+      },
+      "required": ["uid"]
+    },
+    "studentProfiles": {
+      "title": "Student Academic Profile",
+      "description": "Academic profile, target track, completed courses, and weekly study budget",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "rollNumber": { "type": "string" },
+        "institution": { "type": "string" },
+        "currentSemester": { "type": "number" },
+        "targetCareerTrackId": { "type": "string" },
+        "completedCourseIds": { "type": "array", "items": { "type": "string" } },
+        "grades": { "type": "object" },
+        "skillLevels": { "type": "object" },
+        "weeklyStudyHoursBudget": { "type": "number" },
+        "preferredPace": { "type": "string" },
+        "interests": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "name", "currentSemester", "targetCareerTrackId"]
+    },
+    "semesterPlans": {
+      "title": "Semester Degree Plan",
+      "description": "Selected course list in active semester planner",
+      "properties": {
+        "uid": { "type": "string" },
+        "selectedCourseIds": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "selectedCourseIds"]
+    },
+    "counselorChats": {
+      "title": "AI Academic Counselor Chat History",
+      "description": "Saved academic advisor chat messages",
+      "properties": {
+        "uid": { "type": "string" },
+        "messages": { "type": "array", "items": { "type": "object" } },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "messages"]
+    }
+  }
+}

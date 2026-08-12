@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { User } from 'firebase/auth';
 import { StudentProfile, RecommendedCourseResult, SkillGapItem, Course, AiInsightResponse } from './types/curriculum';
 import { INITIAL_STUDENT_PROFILE } from './data/btechItCurriculum';
 import { generateCourseRecommendations, calculateSkillGapMatrix } from './services/recommendationEngine';
+import {
+  subscribeAuthState,
+  subscribeStudentProfile,
+  subscribeSemesterPlan,
+  saveStudentProfileCloud,
+  saveSemesterPlanCloud,
+  loginAnonymously
+} from './services/firebase';
 
 import { Header } from './components/Header';
 import { ProfileSetup } from './components/ProfileSetup';
@@ -13,12 +22,17 @@ import { SyllabusModal } from './components/SyllabusModal';
 import { AiCounselorModal } from './components/AiCounselorModal';
 import { WelcomePanel } from './components/WelcomePanel';
 import { WelcomeWalkthroughModal } from './components/WelcomeWalkthroughModal';
+import { AuthModal } from './components/AuthModal';
 
 export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('app-theme');
     return (saved === 'dark' || saved === 'light') ? saved : 'light';
   });
+
+  // Firebase Auth & Cloud Sync state
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
 
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(INITIAL_STUDENT_PROFILE);
   const [recommendations, setRecommendations] = useState<RecommendedCourseResult[]>([]);
@@ -35,6 +49,37 @@ export default function App() {
   const [isCounselorModalOpen, setIsCounselorModalOpen] = useState<boolean>(false);
   const [isWalkthroughModalOpen, setIsWalkthroughModalOpen] = useState<boolean>(false);
   const [activeSyllabusCourse, setActiveSyllabusCourse] = useState<Course | null>(null);
+
+  // Sync with Firebase Auth & Realtime Firestore listeners
+  useEffect(() => {
+    const unsubscribeAuth = subscribeAuthState((user) => {
+      setCurrentUser(user);
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
+
+  // Listen to Firestore Student Profile & Semester Plan changes when user is authenticated
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const unsubscribeProfile = subscribeStudentProfile(currentUser.uid, (cloudProfile) => {
+      if (cloudProfile) {
+        setStudentProfile(cloudProfile);
+      }
+    });
+
+    const unsubscribePlan = subscribeSemesterPlan(currentUser.uid, (cloudPlanIds) => {
+      if (cloudPlanIds && cloudPlanIds.length > 0) {
+        setSelectedPlanCourseIds(cloudPlanIds);
+      }
+    });
+
+    return () => {
+      unsubscribeProfile();
+      unsubscribePlan();
+    };
+  }, [currentUser]);
 
   // Sync theme with document class and localStorage
   useEffect(() => {
@@ -64,30 +109,48 @@ export default function App() {
     if (selectedPlanCourseIds.length === 0) {
       const top3Ids = recs.filter(r => r.prerequisitesMet).slice(0, 3).map(r => r.course.id);
       setSelectedPlanCourseIds(top3Ids);
+      if (currentUser) {
+        saveSemesterPlanCloud(currentUser.uid, top3Ids);
+      }
     }
   }, [studentProfile]);
 
   const handleSaveProfile = (updatedProfile: StudentProfile) => {
     setStudentProfile(updatedProfile);
+    if (currentUser) {
+      saveStudentProfileCloud(currentUser.uid, updatedProfile);
+    }
   };
 
   const handleTogglePlanCourse = (courseId: string) => {
+    let nextIds: string[];
     if (selectedPlanCourseIds.includes(courseId)) {
-      setSelectedPlanCourseIds(prev => prev.filter(id => id !== courseId));
+      nextIds = selectedPlanCourseIds.filter(id => id !== courseId);
     } else {
-      setSelectedPlanCourseIds(prev => [...prev, courseId]);
+      nextIds = [...selectedPlanCourseIds, courseId];
+    }
+    setSelectedPlanCourseIds(nextIds);
+    if (currentUser) {
+      saveSemesterPlanCloud(currentUser.uid, nextIds);
     }
   };
 
   const handleClearPlan = () => {
     setSelectedPlanCourseIds([]);
+    if (currentUser) {
+      saveSemesterPlanCloud(currentUser.uid, []);
+    }
   };
 
   const handleChangeCareerTrack = (trackId: string) => {
-    setStudentProfile(prev => ({
-      ...prev,
+    const nextProfile = {
+      ...studentProfile,
       targetCareerTrackId: trackId
-    }));
+    };
+    setStudentProfile(nextProfile);
+    if (currentUser) {
+      saveStudentProfileCloud(currentUser.uid, nextProfile);
+    }
   };
 
   const handleRequestAiInsight = async () => {
@@ -151,6 +214,8 @@ export default function App() {
         onOpenProfile={() => setIsProfileModalOpen(true)}
         onOpenCounselor={() => setIsCounselorModalOpen(true)}
         onOpenWalkthrough={() => setIsWalkthroughModalOpen(true)}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        currentUser={currentUser}
         selectedPlanCount={selectedPlanCourseIds.length}
         totalCredits={recommendations.filter(r => selectedPlanCourseIds.includes(r.course.id)).reduce((sum, r) => sum + r.course.credits, 0)}
         theme={theme}
@@ -243,6 +308,13 @@ export default function App() {
           onOpenProfile={() => setIsProfileModalOpen(true)}
           onOpenCounselor={() => setIsCounselorModalOpen(true)}
           onLoadDemoProfile={handleSaveProfile}
+        />
+      )}
+
+      {isAuthModalOpen && (
+        <AuthModal
+          user={currentUser}
+          onClose={() => setIsAuthModalOpen(false)}
         />
       )}
 

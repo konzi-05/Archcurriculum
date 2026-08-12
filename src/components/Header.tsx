@@ -1,5 +1,6 @@
 import React from 'react';
-import { GraduationCap, Sparkles, MessageSquare, Compass, SlidersHorizontal, BookOpen, Sun, Moon, HelpCircle } from 'lucide-react';
+import { User } from 'firebase/auth';
+import { GraduationCap, Sparkles, MessageSquare, Compass, SlidersHorizontal, BookOpen, Sun, Moon, HelpCircle, Database, UserCheck } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: 'recommendations' | 'curriculum' | 'career' | 'planner';
@@ -7,6 +8,8 @@ interface HeaderProps {
   onOpenProfile: () => void;
   onOpenCounselor: () => void;
   onOpenWalkthrough: () => void;
+  onOpenAuth: () => void;
+  currentUser: User | null;
   selectedPlanCount: number;
   totalCredits: number;
   theme: 'light' | 'dark';
@@ -19,6 +22,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenProfile,
   onOpenCounselor,
   onOpenWalkthrough,
+  onOpenAuth,
+  currentUser,
   selectedPlanCount,
   totalCredits,
   theme,
@@ -130,6 +135,19 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Counselor</span>
+              </button>
+
+              <button
+                id="btn-cloud-account"
+                onClick={onOpenAuth}
+                className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center space-x-1.5 min-h-[38px] sm:min-h-[42px]"
+                title="Firebase Auth & Cloud Database Sync"
+              >
+                <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="hidden min-[500px]:inline font-bold">
+                  {currentUser ? (currentUser.displayName?.split(' ')[0] || 'Account') : 'Cloud Sync'}
+                </span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
               </button>
 
               <button
