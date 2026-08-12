@@ -40,6 +40,16 @@ export const loginWithGoogle = async () => {
     await syncUserProfile(result.user);
     return result.user;
   } catch (error: any) {
+    if (error.code === 'auth/unauthorized-domain') {
+      const domain = typeof window !== 'undefined' ? window.location.hostname : 'this domain';
+      throw new Error(`Domain Unauthorized: "${domain}" is not authorized in Firebase Console. Please sign in using Email & Password below, or add "${domain}" to Authorized Domains in Firebase Authentication Settings.`);
+    }
+    if (error.code === 'auth/popup-closed-by-user') {
+      throw new Error('Sign-in popup was closed before completion. Please try again.');
+    }
+    if (error.code === 'auth/popup-blocked') {
+      throw new Error('Sign-in popup was blocked by browser. Please allow popups or sign in with Email.');
+    }
     console.error('Google Sign In Error:', error);
     throw error;
   }
@@ -47,16 +57,48 @@ export const loginWithGoogle = async () => {
 
 // Sign In with Email & Password
 export const loginWithEmail = async (email: string, pass: string) => {
-  const result = await signInWithEmailAndPassword(auth, email, pass);
-  await syncUserProfile(result.user);
-  return result.user;
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, pass);
+    await syncUserProfile(result.user);
+    return result.user;
+  } catch (error: any) {
+    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      throw new Error('Invalid email or password. If you don\'t have an account yet, switch to "Create New Account".');
+    }
+    if (error.code === 'auth/invalid-email') {
+      throw new Error('Please enter a valid email address.');
+    }
+    if (error.code === 'auth/too-many-requests') {
+      throw new Error('Access temporarily restricted due to many failed attempts. Please try again later.');
+    }
+    if (error.code === 'auth/operation-not-allowed') {
+      throw new Error('Email/Password sign-in is not enabled in Firebase Console Authentication.');
+    }
+    throw new Error(error.message || 'Failed to sign in.');
+  }
 };
 
 // Register with Email & Password
 export const registerWithEmail = async (email: string, pass: string) => {
-  const result = await createUserWithEmailAndPassword(auth, email, pass);
-  await syncUserProfile(result.user);
-  return result.user;
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, pass);
+    await syncUserProfile(result.user);
+    return result.user;
+  } catch (error: any) {
+    if (error.code === 'auth/email-already-in-use') {
+      throw new Error('This email is already registered. Please click "Already registered? Sign In" below.');
+    }
+    if (error.code === 'auth/weak-password') {
+      throw new Error('Password must be at least 6 characters long.');
+    }
+    if (error.code === 'auth/invalid-email') {
+      throw new Error('Please enter a valid email address.');
+    }
+    if (error.code === 'auth/operation-not-allowed') {
+      throw new Error('Email/Password registration is not enabled in Firebase Console Authentication.');
+    }
+    throw new Error(error.message || 'Failed to create account.');
+  }
 };
 
 // Guest / Anonymous Auth

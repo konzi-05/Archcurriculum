@@ -186,8 +186,35 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose }) => {
             /* User Unauthenticated State */
             <div className="space-y-4">
               
+              {/* Mode Tabs */}
+              <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => { setMode('signin'); setErrorMsg(null); }}
+                  className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${
+                    mode === 'signin'
+                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMode('signup'); setErrorMsg(null); }}
+                  className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${
+                    mode === 'signup'
+                      ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
+                  }`}
+                >
+                  Create New Account
+                </button>
+              </div>
+
               {/* Google Sign In Button */}
               <button
+                type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
                 className="w-full py-2.5 px-4 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold border border-slate-300 dark:border-slate-700 transition-all shadow-2xs flex items-center justify-center space-x-2.5 min-h-[44px]"
@@ -210,7 +237,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose }) => {
                     d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"
                   />
                 </svg>
-                <span>Continue with Google Account</span>
+                <span>Continue with Google</span>
               </button>
 
               <div className="relative flex py-1 items-center">
@@ -220,6 +247,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose }) => {
                 </span>
                 <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
               </div>
+
+              {/* Error Message Notice */}
+              {errorMsg && (
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs space-y-1.5">
+                  <div className="font-bold flex items-center space-x-1.5 text-amber-800 dark:text-amber-300">
+                    <KeyRound className="w-4 h-4 shrink-0" />
+                    <span>Authentication Notice</span>
+                  </div>
+                  <p className="leading-relaxed opacity-95 text-[11px]">
+                    {errorMsg}
+                  </p>
+                </div>
+              )}
 
               {/* Email Form */}
               <form onSubmit={handleEmailAuth} className="space-y-3">
@@ -256,12 +296,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose }) => {
                     />
                   </div>
                 </div>
-
-                {errorMsg && (
-                  <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[11px] font-medium">
-                    {errorMsg}
-                  </div>
-                )}
 
                 <button
                   type="submit"
