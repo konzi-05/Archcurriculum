@@ -179,7 +179,7 @@ export const saveSemesterPlanCloud = async (uid: string, selectedCourseIds: stri
 };
 
 // Subscribe to real-time Semester Plan updates
-export const subscribeSemesterPlan = (uid: string, callback: (selectedCourseIds: string[]) => void) => {
+export const subscribeSemesterPlan = (uid: string, callback: (selectedCourseIds: string[] | null) => void) => {
   if (!uid) return () => {};
   const planRef = doc(db, 'semesterPlans', uid);
   return onSnapshot(planRef, (snap) => {
@@ -187,10 +187,41 @@ export const subscribeSemesterPlan = (uid: string, callback: (selectedCourseIds:
       const data = snap.data();
       callback(data.selectedCourseIds || []);
     } else {
-      callback([]);
+      callback(null);
     }
   }, (error) => {
-    console.error('Error listening to semester plan:', error);
+    console.warn('Error listening to semester plan:', error);
+  });
+};
+
+// Save Counselor Chat History to Firestore `counselorChats/{uid}`
+export const saveCounselorChatCloud = async (uid: string, messages: any[]) => {
+  if (!uid) return;
+  try {
+    const chatRef = doc(db, 'counselorChats', uid);
+    await setDoc(chatRef, {
+      uid,
+      messages,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (err) {
+    console.warn('Save counselor chat cloud error:', err);
+  }
+};
+
+// Subscribe to real-time Counselor Chat updates
+export const subscribeCounselorChat = (uid: string, callback: (messages: any[] | null) => void) => {
+  if (!uid) return () => {};
+  const chatRef = doc(db, 'counselorChats', uid);
+  return onSnapshot(chatRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      callback(data.messages || []);
+    } else {
+      callback(null);
+    }
+  }, (error) => {
+    console.warn('Error listening to counselor chat:', error);
   });
 };
 

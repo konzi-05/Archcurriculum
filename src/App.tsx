@@ -66,12 +66,18 @@ export default function App() {
     const unsubscribeProfile = subscribeStudentProfile(currentUser.uid, (cloudProfile) => {
       if (cloudProfile) {
         setStudentProfile(cloudProfile);
+      } else {
+        // First time cloud user: seed Firestore with current local profile
+        saveStudentProfileCloud(currentUser.uid, studentProfile);
       }
     });
 
     const unsubscribePlan = subscribeSemesterPlan(currentUser.uid, (cloudPlanIds) => {
-      if (cloudPlanIds && cloudPlanIds.length > 0) {
+      if (cloudPlanIds !== null) {
         setSelectedPlanCourseIds(cloudPlanIds);
+      } else {
+        // First time cloud user: seed Firestore with current local semester plan
+        saveSemesterPlanCloud(currentUser.uid, selectedPlanCourseIds);
       }
     });
 
@@ -105,13 +111,10 @@ export default function App() {
     setRecommendations(recs);
     setSkillGapMatrix(gaps);
 
-    // Auto-preselect top 3 recommended electives into plan if planner is empty
-    if (selectedPlanCourseIds.length === 0) {
+    // Auto-preselect top 3 recommended electives into plan for offline/guest users if planner is empty
+    if (selectedPlanCourseIds.length === 0 && !currentUser) {
       const top3Ids = recs.filter(r => r.prerequisitesMet).slice(0, 3).map(r => r.course.id);
       setSelectedPlanCourseIds(top3Ids);
-      if (currentUser) {
-        saveSemesterPlanCloud(currentUser.uid, top3Ids);
-      }
     }
   }, [studentProfile]);
 
@@ -298,6 +301,7 @@ export default function App() {
       {isCounselorModalOpen && (
         <AiCounselorModal
           profile={studentProfile}
+          currentUser={currentUser}
           onClose={() => setIsCounselorModalOpen(false)}
         />
       )}

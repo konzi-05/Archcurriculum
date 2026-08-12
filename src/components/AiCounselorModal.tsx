@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { User as FirebaseUser } from 'firebase/auth';
 import { StudentProfile } from '../types/curriculum';
-import { X, Send, Sparkles, Bot, User, Loader2 } from 'lucide-react';
+import { X, Send, Sparkles, Bot, User as UserIcon, Loader2, Database } from 'lucide-react';
+import { saveCounselorChatCloud, subscribeCounselorChat } from '../services/firebase';
 
 interface AiCounselorModalProps {
   profile: StudentProfile;
+  currentUser?: FirebaseUser | null;
   onClose: () => void;
 }
 
@@ -14,7 +17,7 @@ interface ChatMessage {
   timestamp: string;
 }
 
-export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onClose }) => {
+export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, currentUser, onClose }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -26,6 +29,19 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onC
 
   const [inputQuery, setInputQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sync counselor chat history with Firestore
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const unsubscribe = subscribeCounselorChat(currentUser.uid, (cloudMessages) => {
+      if (cloudMessages && cloudMessages.length > 0) {
+        setMessages(cloudMessages);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +57,12 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onC
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    const newMsgsWithUser = [...messages, userMsg];
+    setMessages(newMsgsWithUser);
+    if (currentUser) {
+      saveCounselorChatCloud(currentUser.uid, newMsgsWithUser);
+    }
+
     setIsLoading(true);
 
     try {
@@ -61,7 +82,11 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onC
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
-      setMessages(prev => [...prev, aiMsg]);
+      const finalMsgs = [...newMsgsWithUser, aiMsg];
+      setMessages(finalMsgs);
+      if (currentUser) {
+        saveCounselorChatCloud(currentUser.uid, finalMsgs);
+      }
     } catch (err) {
       console.error(err);
       const aiMsg: ChatMessage = {
@@ -70,7 +95,11 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onC
         text: `Regarding "${userText}": As a Semester ${profile.currentSemester} B.Tech IT student, check your completed course prerequisites and align your elective choices with your target career track.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      setMessages(prev => [...prev, aiMsg]);
+      const finalMsgs = [...newMsgsWithUser, aiMsg];
+      setMessages(finalMsgs);
+      if (currentUser) {
+        saveCounselorChatCloud(currentUser.uid, finalMsgs);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +145,7 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({ profile, onC
               <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
                 msg.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
               }`}>
-                {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                {msg.sender === 'user' ? <UserIcon className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
               </div>
 
               <div className={`p-4 rounded-2xl max-w-[82%] ${
