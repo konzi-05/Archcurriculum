@@ -114,8 +114,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
 
           {/* Target Career Track */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-2 flex items-center space-x-2">
-              <Target className="w-4 h-4 text-blue-600" />
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center space-x-2">
+              <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <span>Target Career Pathway</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -127,16 +127,16 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
                     onClick={() => setFormData({ ...formData, targetCareerTrackId: track.id })}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all shadow-2xs ${
                       isSelected
-                        ? 'bg-blue-50/90 border-blue-500 ring-2 ring-blue-500/20'
-                        : 'bg-white border-slate-200 hover:border-slate-300'
+                        ? 'bg-blue-50/90 dark:bg-blue-950/80 border-blue-500 ring-2 ring-blue-500/20'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <h4 className="text-xs font-bold text-slate-900">{track.title}</h4>
-                      {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>}
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">{track.title}</h4>
+                      {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-blue-400"></span>}
                     </div>
-                    <p className="text-xs text-slate-600 line-clamp-2 mb-2">{track.targetRole}</p>
-                    <div className="text-[11px] font-bold text-blue-700">Demand: {track.industryDemand}</div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mb-2">{track.targetRole}</p>
+                    <div className="text-[11px] font-bold text-blue-700 dark:text-blue-300">Demand: {track.industryDemand}</div>
                   </div>
                 );
               })}
@@ -144,10 +144,10 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
           </div>
 
           {/* Preferences: Pace & Budget */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xs">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center space-x-1.5">
-                <Clock className="w-3.5 h-3.5 text-blue-600" />
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center space-x-1.5">
+                <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 <span>Weekly Study Hours Budget</span>
               </label>
               <div className="flex items-center space-x-3 mt-2">
@@ -157,17 +157,17 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
                   max="50"
                   value={formData.weeklyStudyHoursBudget}
                   onChange={e => setFormData({ ...formData, weeklyStudyHoursBudget: Number(e.target.value) })}
-                  className="flex-1 accent-blue-600"
+                  className="flex-1 accent-blue-600 dark:accent-blue-400"
                 />
-                <span className="text-xs font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-200">
+                <span className="text-xs font-bold bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800">
                   {formData.weeklyStudyHoursBudget} hrs/wk
                 </span>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center space-x-1.5">
-                <Award className="w-3.5 h-3.5 text-blue-600" />
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center space-x-1.5">
+                <Award className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 <span>Preferred Workload Intensity Pace</span>
               </label>
               <div className="grid grid-cols-3 gap-2 text-xs mt-2">
@@ -176,10 +176,10 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
                     key={pace}
                     type="button"
                     onClick={() => setFormData({ ...formData, preferredPace: pace })}
-                    className={`py-1.5 px-2 rounded-lg border text-center transition-all ${
+                    className={`py-2 px-2 rounded-lg border text-center transition-all min-h-[40px] ${
                       formData.preferredPace === pace
                         ? 'bg-blue-600 border-blue-600 text-white font-bold'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900'
+                        : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     {pace}
@@ -191,25 +191,25 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
 
           {/* Completed Courses Transcript Checklist */}
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <div>
-                <h3 className="text-xs font-bold text-slate-900">Completed Course Transcript Checklist</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">Completed Course Transcript Checklist</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Check courses you have already passed to calculate prerequisites correctly.
                 </p>
               </div>
-              <div className="text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+              <div className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/80 px-3 py-1 rounded-lg border border-blue-200 dark:border-blue-800">
                 {formData.completedCourseIds.length} / {BTECH_IT_COURSES.length} Completed
               </div>
             </div>
 
             {/* Semester Filter Tabs */}
-            <div className="flex items-center space-x-1 mb-3 overflow-x-auto pb-1 text-xs">
+            <div className="flex items-center space-x-1 mb-3 overflow-x-auto pb-1.5 text-xs">
               <button
                 type="button"
                 onClick={() => setActiveSemFilter(0)}
-                className={`px-3 py-1 rounded-lg border text-xs font-medium whitespace-nowrap ${
-                  activeSemFilter === 0 ? 'bg-blue-600 border-blue-600 text-white font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                className={`px-3 py-1.5 rounded-lg border text-xs font-medium whitespace-nowrap min-h-[38px] ${
+                  activeSemFilter === 0 ? 'bg-blue-600 border-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
                 All Semesters
@@ -219,8 +219,8 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
                   key={s}
                   type="button"
                   onClick={() => setActiveSemFilter(s)}
-                  className={`px-3 py-1 rounded-lg border text-xs font-medium whitespace-nowrap ${
-                    activeSemFilter === s ? 'bg-blue-600 border-blue-600 text-white font-bold' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-medium whitespace-nowrap min-h-[38px] ${
+                    activeSemFilter === s ? 'bg-blue-600 border-blue-600 text-white font-bold' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
                   Sem {s}
@@ -237,22 +237,22 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
                   if (semCourses.length === 0) return null;
 
                   return (
-                    <div key={semNum} className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-                      <div className="flex items-center justify-between mb-2.5 pb-1.5 border-b border-slate-200">
-                        <span className="text-xs font-bold text-slate-800">Semester {semNum}</span>
+                    <div key={semNum} className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xs">
+                      <div className="flex items-center justify-between mb-2.5 pb-1.5 border-b border-slate-200 dark:border-slate-800">
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Semester {semNum}</span>
                         <div className="flex items-center space-x-2 text-xs font-medium">
                           <button
                             type="button"
                             onClick={() => selectSemesterAll(semNum)}
-                            className="text-blue-600 hover:underline"
+                            className="text-blue-600 dark:text-blue-400 hover:underline"
                           >
                             Mark All Completed
                           </button>
-                          <span className="text-slate-300">|</span>
+                          <span className="text-slate-300 dark:text-slate-700">|</span>
                           <button
                             type="button"
                             onClick={() => clearSemesterAll(semNum)}
-                            className="text-slate-500 hover:text-slate-800 hover:underline"
+                            className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:underline"
                           >
                             Clear
                           </button>
@@ -266,22 +266,22 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
                             <div
                               key={course.id}
                               onClick={() => toggleCourseCompletion(course.id)}
-                              className={`p-2.5 rounded-lg border text-xs cursor-pointer flex items-center justify-between transition-all ${
+                              className={`p-2.5 rounded-lg border text-xs cursor-pointer flex items-center justify-between transition-all min-h-[44px] ${
                                 isCompleted
-                                  ? 'bg-blue-50/80 border-blue-300 text-slate-900 font-medium'
-                                  : 'bg-slate-50/60 border-slate-200/80 text-slate-600 hover:border-slate-300'
+                                  ? 'bg-blue-50/80 dark:bg-blue-950/80 border-blue-300 dark:border-blue-800 text-slate-900 dark:text-slate-100 font-medium'
+                                  : 'bg-slate-50/60 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
                               }`}
                             >
                               <div className="flex items-center space-x-2 truncate pr-2">
-                                <div className={`w-4 h-4 rounded flex items-center justify-center border ${
-                                  isCompleted ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300 bg-white'
+                                <div className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 ${
+                                  isCompleted ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
                                 }`}>
                                   {isCompleted && <Check className="w-3 h-3 stroke-[3]" />}
                                 </div>
-                                <span className="font-bold text-xs text-blue-700 bg-blue-50/50 px-1.5 py-0.5 rounded border border-blue-100">{course.code}</span>
+                                <span className="font-bold text-xs text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-900 shrink-0">{course.code}</span>
                                 <span className="truncate font-medium">{course.name}</span>
                               </div>
-                              <span className="text-[10px] text-slate-500 font-medium whitespace-nowrap">{course.credits} cr</span>
+                              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap shrink-0">{course.credits} cr</span>
                             </div>
                           );
                         })}
@@ -293,18 +293,18 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = ({ profile, onSaveProfi
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors min-h-[42px]"
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white shadow-xs shadow-blue-200 transition-all"
+              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white shadow-xs shadow-blue-200 dark:shadow-none transition-all min-h-[42px]"
             >
               Save Profile & Re-Calculate
             </button>
