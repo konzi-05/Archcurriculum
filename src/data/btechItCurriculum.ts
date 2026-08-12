@@ -376,7 +376,7 @@ export const BTECH_IT_COURSES: Course[] = [
     credits: 3,
     type: 'Elective',
     domain: 'AI & Data Science',
-    prerequisites: ['CS602'],
+    prerequisites: ['EL511'],
     difficulty: 5,
     workloadHours: 8,
     skillsAcquired: ['PyTorch', 'Convolutional Networks (CNN)', 'Recurrent Networks (RNN)', 'Transformers & LLMs'],

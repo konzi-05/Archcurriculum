@@ -130,20 +130,27 @@ export function generateCourseRecommendations(profile: StudentProfile): Recommen
 
     // Overall Weighted Score
     let overallMatchScore = Math.round(
-      0.35 * prereqCheck.prerequisiteScore +
-      0.30 * careerMatchScore +
-      0.20 * skillGapScore +
-      0.15 * workloadBalanceScore
+      0.35 * (prereqCheck.prerequisitesMet ? 100 : Math.max(50, prereqCheck.prerequisiteScore)) +
+      0.35 * careerMatchScore +
+      0.18 * skillGapScore +
+      0.12 * workloadBalanceScore
     );
 
-    // Penalty if prerequisites not fully met
+    // Minor adjustment if prerequisites not yet satisfied
     if (!prereqCheck.prerequisitesMet) {
-      overallMatchScore = Math.round(overallMatchScore * 0.65);
+      if (isDirectlyRecommended) {
+        // Track specialization electives remain high-priority for degree planning
+        overallMatchScore = Math.max(72, Math.round(overallMatchScore * 0.88));
+      } else {
+        overallMatchScore = Math.round(overallMatchScore * 0.75);
+      }
+    } else if (isDirectlyRecommended) {
+      overallMatchScore = Math.min(100, overallMatchScore + 10);
     }
 
     const matchReasons: string[] = [];
     if (isDirectlyRecommended) {
-      matchReasons.push(`Official core elective recommended for ${targetTrack.title}`);
+      matchReasons.push(`Core specialization elective for ${targetTrack.title}`);
     }
     if (matchingSkills.length > 0) {
       matchReasons.push(`Teaches key track skills: ${matchingSkills.join(', ')}`);
@@ -153,6 +160,8 @@ export function generateCourseRecommendations(profile: StudentProfile): Recommen
     }
     if (prereqCheck.prerequisitesMet) {
       matchReasons.push(`All prerequisites satisfied and ready for enrollment`);
+    } else if (isDirectlyRecommended && course.semester > profile.currentSemester) {
+      matchReasons.push(`Sequential track module scheduled for Semester ${course.semester}`);
     }
 
     const warningFlags: string[] = [];

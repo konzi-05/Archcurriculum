@@ -22,7 +22,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
 }) => {
   const [selectedDomain, setSelectedDomain] = useState<string>('All');
   const [prereqOnlyFilter, setPrereqOnlyFilter] = useState<boolean>(false);
-  const [minMatchFilter, setMinMatchFilter] = useState<number>(50);
+  const [minMatchFilter, setMinMatchFilter] = useState<number>(0);
 
   const targetTrack = CAREER_TRACKS.find(t => t.id === studentProfile.targetCareerTrackId) || CAREER_TRACKS[0];
 
@@ -50,10 +50,10 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
               <span>Smart Elective Recommendation Engine</span>
             </div>
             <h2 className="text-2xl font-bold text-white tracking-tight">
-              Recommended Electives for <span className="underline decoration-cyan-300 decoration-wavy underline-offset-4">{targetTrack.title}</span>
+              Recommended Electives for <span className="text-cyan-300 font-extrabold bg-white/10 px-2.5 py-0.5 rounded-lg border border-cyan-300/30 inline-block">{targetTrack.title}</span>
             </h2>
             <p className="text-sm text-indigo-100 mt-2 max-w-2xl leading-relaxed">
-              Personalized course recommendations based on Semester {studentProfile.currentSemester} prerequisites, credit limits, and core skills needed for {targetTrack.targetRole}.
+              Personalized course recommendations tailored for Semester {studentProfile.currentSemester} prerequisites, credit limits, and core industry competencies required across Information Technology and target career tracks like {targetTrack.targetRole}.
             </p>
           </div>
 
