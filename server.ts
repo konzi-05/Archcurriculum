@@ -138,6 +138,40 @@ Generate a comprehensive academic insight report in JSON format matching the sch
     }
   });
 
+function generateFallbackCounselorResponse(userQuery: string, profile: any): string {
+  const q = userQuery.toLowerCase();
+  const name = profile?.name || 'Student';
+  const sem = profile?.currentSemester || 5;
+  const targetTrack = CAREER_TRACKS.find(t => t.id === profile?.targetCareerTrackId) || CAREER_TRACKS[0];
+
+  if (q.includes('machine learning') || q.includes('cloud') || q.includes('first') || q.includes('pick')) {
+    return `Hello ${name}! For your target track in ${targetTrack.title}, I recommend establishing foundational Data Structures and Database Systems first (Semester 3/4) before attempting advanced electives like Machine Learning or Cloud Infrastructure. If you are in Semester ${sem}, taking Cloud Infrastructure and Microservices alongside Data Mining provides a great balance of practical software architecture and analytical skills.`;
+  }
+
+  if (q.includes('aws') || q.includes('certif') || q.includes('prepare')) {
+    return `To prepare for certifications like AWS Certified Solutions Architect or TensorFlow Developer during your B.Tech IT program:
+1. Complete core course prerequisites in Operating Systems, Computer Networks, and Cloud Computing.
+2. Hands-on Labs: Dedicate 3-4 hours weekly to building containerized microservices in Docker and deploying on cloud infrastructure.
+3. Align certification prep with your Semester ${sem} elective schedule so your academic projects double as portfolio work!`;
+  }
+
+  if (q.includes('capstone') || q.includes('project') || q.includes('mini')) {
+    return `For your Semester ${sem} capstone/mini project, here are 3 high-impact project ideas aligned with ${targetTrack.title}:
+1. Real-Time Distributed Log Analytics Pipeline (using Kafka, Docker, and Elasticsearch).
+2. AI-Powered Image Classification API (using PyTorch and modern React UI).
+3. Zero-Trust Microservice Gateway with Role-Based Access Control.
+Each of these demonstrates production-grade system architecture for top IT recruiters.`;
+  }
+
+  if (q.includes('gpa') || q.includes('cgpa') || q.includes('grade')) {
+    return `To boost your CGPA in Semester ${sem}:
+- Prioritize high-credit Core subjects (4 Credits each) like Algorithms and DBMS.
+- Utilize our interactive GPA / CGPA Calculator in the Semester Planner tab to set your target SGPA and simulate grade outcomes before end-semester exams!`;
+  }
+
+  return `Hello ${name}! As a B.Tech IT student in Semester ${sem} aiming for ${targetTrack.title}, ensure your upcoming semester plan balances theory subjects with hands-on lab courses. Check the "Recommendations" tab for personalized match scores based on your completed prerequisites.`;
+}
+
   // Interactive AI Counselor Q&A Endpoint
   app.post('/api/counselor/chat', async (req, res) => {
     try {
@@ -146,10 +180,12 @@ Generate a comprehensive academic insight report in JSON format matching the sch
         return res.status(400).json({ error: 'Query parameter required' });
       }
 
-      const ai = getGeminiClient();
       const targetTrack = CAREER_TRACKS.find(t => t.id === profile?.targetCareerTrackId) || CAREER_TRACKS[0];
 
-      const prompt = `
+      if (process.env.GEMINI_API_KEY) {
+        try {
+          const ai = getGeminiClient();
+          const prompt = `
 Student Query: "${userQuery}"
 
 Student Context:
@@ -162,18 +198,29 @@ Provide a clear, encouraging, expert academic response tailored to B.Tech Inform
 Include concrete course advice, prerequisite path advice, and practical study strategies.
 `;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
-        contents: prompt,
-        config: {
-          systemInstruction: 'You are the Chief Academic Counselor for B.Tech Information Technology degrees. Give clear, direct, and actionable academic guidance.',
-        }
-      });
+          const response = await ai.models.generateContent({
+            model: 'gemini-3.6-flash',
+            contents: prompt,
+            config: {
+              systemInstruction: 'You are the Chief Academic Counselor for B.Tech Information Technology degrees. Give clear, direct, and actionable academic guidance.',
+            }
+          });
 
-      res.json({ responseText: response.text });
+          if (response && response.text) {
+            return res.json({ responseText: response.text });
+          }
+        } catch (geminiErr) {
+          console.warn('Gemini API call warning, using smart counselor engine fallback:', geminiErr);
+        }
+      }
+
+      // Smart Fallback response
+      const fallbackText = generateFallbackCounselorResponse(userQuery, profile);
+      res.json({ responseText: fallbackText });
     } catch (err: any) {
       console.error('Counselor chat error:', err);
-      res.status(500).json({ error: 'AI counselor service temporarily unavailable.' });
+      const fallbackText = generateFallbackCounselorResponse(req.body?.userQuery || '', req.body?.profile);
+      res.json({ responseText: fallbackText });
     }
   });
 

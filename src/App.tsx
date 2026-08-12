@@ -37,7 +37,14 @@ export default function App() {
 
   // Sync theme with document class and localStorage
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      document.body.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+      document.body.classList.remove('dark');
+    }
     localStorage.setItem('app-theme', theme);
   }, [theme]);
 
@@ -190,6 +197,8 @@ export default function App() {
             isLoadingAiInsight={isLoadingAiInsight}
             onRequestAiInsight={handleRequestAiInsight}
             onExportPlan={handleExportPlan}
+            onOpenSyllabusModal={course => setActiveSyllabusCourse(course)}
+            onTogglePlanCourse={handleTogglePlanCourse}
           />
         )}
 

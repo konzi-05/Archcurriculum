@@ -92,6 +92,25 @@ export interface AiInsightResponse {
   industryTrends: string;
 }
 
+export interface SemesterGoal {
+  id: string;
+  semester: number;
+  title: string;
+  completed: boolean;
+  category: 'Academic' | 'Certification' | 'Project' | 'Career';
+}
+
+export type CustomCourseSemesterMap = Record<string, number>;
+
+export const GRADE_POINTS: Record<Grade, number> = {
+  'A+': 10,
+  'A': 9,
+  'B': 8,
+  'C': 7,
+  'D': 6,
+  'F': 0
+};
+
 export interface PlanSemesterPayload {
   selectedCourseIds: string[];
   studentProfile: StudentProfile;
