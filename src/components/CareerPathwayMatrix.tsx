@@ -27,48 +27,48 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
   return (
     <div className="space-y-5">
       
-      {/* High Density Header Banner */}
-      <div className="bg-slate-900 border border-slate-700 rounded p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+      {/* Header Banner */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-xs">
         <div>
-          <div className="flex items-center space-x-2 text-[10px] font-mono font-bold uppercase tracking-widest text-blue-400 mb-1">
-            <Target className="w-3.5 h-3.5" />
-            <span>Target Role Benchmark Analytics [Industry Standard Matrix]</span>
+          <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200/80 px-3 py-1 rounded-full mb-2">
+            <Target className="w-3.5 h-3.5 text-blue-600" />
+            <span>Target Role Industry Skill Matrix</span>
           </div>
-          <h2 className="text-xl font-bold text-slate-100">{currentTrack.title} Skill Matrix</h2>
-          <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+          <h2 className="text-xl font-bold text-slate-900">{currentTrack.title} Skill Matrix</h2>
+          <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
             {currentTrack.description}
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 bg-slate-950 p-3 rounded border border-slate-700 text-xs flex-shrink-0 font-mono">
+        <div className="flex items-center space-x-3 bg-blue-50/80 p-3.5 rounded-xl border border-blue-200/80 text-xs flex-shrink-0">
           <div>
-            <div className="text-[9px] text-slate-500 uppercase tracking-widest">Target Industry Role</div>
-            <div className="font-bold text-slate-200">{currentTrack.targetRole}</div>
-            <div className="text-[10px] text-blue-400">Avg Benchmark: {currentTrack.averageSalaryUSD}</div>
+            <div className="text-[10px] text-blue-700 uppercase tracking-wider font-bold">Target Role</div>
+            <div className="font-extrabold text-slate-900 text-sm">{currentTrack.targetRole}</div>
+            <div className="text-xs text-blue-600 font-semibold mt-0.5">Avg Salary Benchmark: {currentTrack.averageSalaryUSD}</div>
           </div>
         </div>
       </div>
 
       {/* Track Selector Bar */}
-      <div className="bg-slate-900 border border-slate-700 p-3.5 rounded">
-        <label className="block text-xs font-bold text-slate-300 font-mono mb-2 uppercase tracking-wide">
+      <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-xs">
+        <label className="block text-xs font-bold text-slate-700 mb-2.5 uppercase tracking-wide">
           Select / Switch B.Tech IT Specialization Track:
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
           {CAREER_TRACKS.map(track => {
             const isSelected = track.id === currentTrack.id;
             return (
               <button
                 key={track.id}
                 onClick={() => onChangeCareerTrack(track.id)}
-                className={`p-2.5 rounded border text-left transition-colors text-xs font-mono ${
+                className={`p-3 rounded-xl border text-left transition-all text-xs ${
                   isSelected
-                    ? 'bg-blue-600 border-blue-500 text-white font-bold'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-xs'
+                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
                 <div className="truncate font-bold">{track.title}</div>
-                <div className="text-[10px] opacity-80 mt-0.5">{track.industryDemand} Demand</div>
+                <div className={`text-[11px] mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>{track.industryDemand} Demand</div>
               </button>
             );
           })}
@@ -79,10 +79,10 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* Radar Chart */}
-        <div className="bg-slate-900 border border-slate-700 rounded p-4 flex flex-col justify-between">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
           <div>
-            <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wide font-mono mb-1">Competency Radar Diagram</h3>
-            <p className="text-xs text-slate-400 mb-3">
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">Competency Radar Diagram</h3>
+            <p className="text-xs text-slate-500 mb-3">
               Visual comparison of student proficiency vs IEEE/ACM benchmark level (85%).
             </p>
           </div>
@@ -90,12 +90,12 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-                <PolarGrid stroke="#334155" />
-                <PolarAngleAxis dataKey="skill" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 10 }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#475569" />
-                <Radar name="Current Proficiency" dataKey="Current" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.5} />
-                <Radar name="Target Proficiency" dataKey="Target" stroke="#22d3ee" fill="#22d3ee" fillOpacity={0.1} strokeDasharray="3 3" />
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '0.25rem', fontSize: '11px' }} />
+                <PolarGrid stroke="#e2e8f0" />
+                <PolarAngleAxis dataKey="skill" stroke="#64748b" tick={{ fill: '#475569', fontSize: 10, fontWeight: 600 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#cbd5e1" />
+                <Radar name="Current Proficiency" dataKey="Current" stroke="#2563eb" fill="#2563eb" fillOpacity={0.4} />
+                <Radar name="Target Proficiency" dataKey="Target" stroke="#0284c7" fill="#0284c7" fillOpacity={0.1} strokeDasharray="3 3" />
+                <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '0.75rem', fontSize: '11px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
               </RadarChart>
             </ResponsiveContainer>
@@ -103,9 +103,9 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
         </div>
 
         {/* Skill Gap Progress List */}
-        <div className="bg-slate-900 border border-slate-700 rounded p-4">
-          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wide font-mono mb-1">Skill Gap Coverage Analysis</h3>
-          <p className="text-xs text-slate-400 mb-3">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">Skill Gap Coverage Analysis</h3>
+          <p className="text-xs text-slate-500 mb-3">
             Core competencies required for {currentTrack.title} and course mappings.
           </p>
 
@@ -114,29 +114,29 @@ export const CareerPathwayMatrix: React.FC<CareerPathwayMatrixProps> = ({
               const coveragePct = Math.round((item.currentLevel / item.requiredLevel) * 100);
 
               return (
-                <div key={item.skill} className="p-3 rounded bg-slate-950/80 border border-slate-800 text-xs">
+                <div key={item.skill} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-slate-200">{item.skill}</span>
-                    <span className="font-mono text-[11px] text-cyan-400 font-bold">
+                    <span className="font-bold text-slate-900">{item.skill}</span>
+                    <span className="text-xs text-blue-700 font-bold">
                       {item.currentLevel} / {item.requiredLevel} ({coveragePct}%)
                     </span>
                   </div>
 
                   {/* High Density Progress Bar */}
-                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mb-1.5">
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-2">
                     <div
-                      className={`h-full transition-all ${
-                        coveragePct >= 90 ? 'bg-emerald-500' : coveragePct >= 60 ? 'bg-blue-500' : 'bg-amber-500'
+                      className={`h-full rounded-full transition-all ${
+                        coveragePct >= 90 ? 'bg-emerald-500' : coveragePct >= 60 ? 'bg-blue-600' : 'bg-amber-500'
                       }`}
                       style={{ width: `${Math.min(100, coveragePct)}%` }}
                     ></div>
                   </div>
 
                   {/* Covering Courses */}
-                  <div className="text-[10px] font-mono text-slate-400 flex items-start space-x-1">
-                    <BookOpen className="w-3 h-3 text-slate-500 flex-shrink-0 mt-0.5" />
+                  <div className="text-xs text-slate-600 flex items-start space-x-1 font-medium">
+                    <BookOpen className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
                     <span>
-                      <strong className="text-slate-300">Matching Modules:</strong> {item.coveredByRecommendedCourses.length > 0 ? item.coveredByRecommendedCourses.join(', ') : 'Covered in upper semester core labs'}
+                      <strong className="text-slate-800">Matching Modules:</strong> {item.coveredByRecommendedCourses.length > 0 ? item.coveredByRecommendedCourses.join(', ') : 'Covered in upper semester core labs'}
                     </span>
                   </div>
                 </div>
