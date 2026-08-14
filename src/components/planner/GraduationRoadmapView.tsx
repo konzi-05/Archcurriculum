@@ -235,18 +235,18 @@ export const GraduationRoadmapView: React.FC<GraduationRoadmapViewProps> = ({
                       >
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center space-x-1.5 flex-wrap">
-                            <span className="font-bold text-blue-600 dark:text-blue-400">{course.code}</span>
+                            <span className="font-bold text-blue-700 dark:text-blue-300 font-mono">{course.futMinnaCode || course.code}</span>
                             <span className="font-bold text-slate-800 dark:text-slate-200 truncate">{course.name}</span>
                             {isCompletedCourse && (
                               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                             )}
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center space-x-2 mt-0.5">
-                            <span>{course.credits} Cr</span>
+                            <span>{course.credits} Units</span>
                             <span>•</span>
                             <span className="truncate">{course.type}</span>
                             <span>•</span>
-                            <span>Diff: {course.difficulty}/5</span>
+                            <span className="text-indigo-600 dark:text-indigo-400 font-medium">{course.academicLevel || 'Level'}</span>
                           </div>
                         </div>
 

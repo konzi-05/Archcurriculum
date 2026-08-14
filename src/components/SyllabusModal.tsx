@@ -22,8 +22,20 @@ export const SyllabusModal: React.FC<SyllabusModalProps> = ({ course, onClose })
             </div>
             <div>
               <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900">{course.code}</span>
+                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900 font-mono">
+                  {course.futMinnaCode || course.code}
+                </span>
+                {course.nucCcmasCode && (
+                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">
+                    NUC: {course.nucCcmasCode}
+                  </span>
+                )}
                 <span className="text-xs px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">{course.type}</span>
+                {course.academicLevel && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-200 dark:border-indigo-800">
+                    {course.academicLevel}
+                  </span>
+                )}
               </div>
               <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mt-1">{course.name}</h2>
             </div>
@@ -43,21 +55,36 @@ export const SyllabusModal: React.FC<SyllabusModalProps> = ({ course, onClose })
           {/* Metadata Badges */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 sm:p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs shadow-xs">
             <div>
-              <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-bold uppercase">Credits</span>
-              <span className="font-extrabold text-slate-800 dark:text-slate-200">{course.credits} Credits</span>
+              <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-bold uppercase">Credit Units</span>
+              <span className="font-extrabold text-slate-800 dark:text-slate-200">{course.credits} Units</span>
             </div>
             <div>
-              <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-bold uppercase">Semester</span>
-              <span className="font-extrabold text-slate-800 dark:text-slate-200">Semester {course.semester}</span>
+              <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-bold uppercase">Semester / Level</span>
+              <span className="font-extrabold text-slate-800 dark:text-slate-200">Sem {course.semester} ({course.academicLevel || 'Level'})</span>
             </div>
             <div>
-              <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-bold uppercase">Difficulty</span>
-              <span className="font-extrabold text-slate-800 dark:text-slate-200">{course.difficulty} / 5</span>
+              <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-bold uppercase">ACM Knowledge Area</span>
+              <span className="font-extrabold text-indigo-600 dark:text-indigo-400 truncate block" title={course.acmKnowledgeArea || 'IT2017'}>
+                {course.acmKnowledgeArea || 'IT2017'}
+              </span>
             </div>
             <div>
               <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-bold uppercase">Bloom's Level</span>
               <span className="font-extrabold text-blue-600 dark:text-blue-400">{course.bloomLevel}</span>
             </div>
+          </div>
+
+          {/* Curriculum Standards Banner */}
+          <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/80 flex items-center justify-between text-xs">
+            <div>
+              <span className="font-bold text-blue-900 dark:text-blue-200 block">Accreditation Mapping:</span>
+              <span className="text-[11px] text-blue-700 dark:text-blue-300">
+                FUT Minna ({course.futMinnaCode || course.code}) • NUC CCMAS ({course.nucCcmasCode || 'Aligned'}) • {course.ieeeAcmStandard || 'IEEE/ACM IT2017'}
+              </span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-1 rounded bg-blue-600 text-white shrink-0">
+              Verified
+            </span>
           </div>
 
           {/* Course Description */}

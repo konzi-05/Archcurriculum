@@ -41,11 +41,11 @@ export const CurriculumMap: React.FC<CurriculumMapProps> = ({
         <div>
           <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800 px-3.5 py-1.5 rounded-full mb-3">
             <Compass className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-            <span>AICTE B.Tech IT Model Curriculum Map</span>
+            <span>NUC CCMAS & FUT Minna B.Tech IT Curriculum Map (IEEE/ACM Aligned)</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">4-Year Degree Course Progression Map</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Degree Course Progression & Knowledge Map</h2>
           <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
-            Explore all 8 semesters of B.Tech Information Technology courses. Track prerequisite paths and see how subjects connect.
+            Explore 100L through 500L courses mapped to Nigerian Universities Commission (NUC) CCMAS standards, Federal University of Technology, Minna (FUT Minna) syllabus, and IEEE/ACM IT2017 & CS2023 international curricula.
           </p>
         </div>
 
@@ -183,8 +183,15 @@ export const CurriculumMap: React.FC<CurriculumMapProps> = ({
                   <div className="space-y-2">
                     {/* Course Code & Credits */}
                     <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center space-x-1.5">
-                        <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-md border border-blue-100 dark:border-blue-900">{course.code}</span>
+                      <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                        <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-md border border-blue-100 dark:border-blue-900 font-mono">
+                          {course.futMinnaCode || course.code}
+                        </span>
+                        {course.nucCcmasCode && (
+                          <span className="text-[9px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">
+                            {course.nucCcmasCode}
+                          </span>
+                        )}
                         {course.type === 'Core' ? (
                           <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800 uppercase">Core</span>
                         ) : (
@@ -192,8 +199,8 @@ export const CurriculumMap: React.FC<CurriculumMapProps> = ({
                         )}
                       </div>
                       <div className="flex items-center space-x-1.5">
-                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                          {course.credits} Cr
+                        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono">
+                          {course.credits} Units
                         </span>
                         {isCompleted && (
                           <span className="flex items-center text-emerald-700 dark:text-emerald-300 text-[10px] font-bold bg-emerald-100/80 dark:bg-emerald-900/60 px-2 py-0.5 rounded-md">
@@ -206,9 +213,12 @@ export const CurriculumMap: React.FC<CurriculumMapProps> = ({
                     {/* Name */}
                     <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">{course.name}</h4>
 
-                    {/* Domain Badge */}
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                      {course.domain} • Diff: {course.difficulty}/5
+                    {/* Domain & ACM Area Badge */}
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      <span>{course.domain}</span>
+                      <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/50 px-1.5 py-0.5 rounded">
+                        {course.acmKnowledgeArea || (course.ieeeAcmStandard || 'IEEE/ACM')}
+                      </span>
                     </div>
 
                     {/* Prerequisites List */}

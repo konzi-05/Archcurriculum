@@ -46,7 +46,7 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
   // Calculate completed credits
   const completedCourses = BTECH_IT_COURSES.filter(c => studentProfile.completedCourseIds?.includes(c.id));
   const completedCredits = completedCourses.reduce((sum, c) => sum + c.credits, 0);
-  const totalDegreeCredits = 160.0; // AICTE B.Tech IT Standard
+  const totalDegreeCredits = 160.0; // NUC CCMAS / FUT Minna B.Tech IT Standard
   const degreeProgressPercent = Math.min(100, Math.round(((completedCredits + totalPlannedCredits) / totalDegreeCredits) * 100));
 
   // Calculate estimated weekly workload for selected plan
@@ -284,7 +284,7 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-slate-600 dark:text-slate-400 flex items-center space-x-1.5">
                   <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  <span>AICTE Degree Credits</span>
+                  <span>NUC Degree Units</span>
                 </span>
                 <span className="font-extrabold text-blue-600 dark:text-blue-400 text-xs">
                   {degreeProgressPercent}%

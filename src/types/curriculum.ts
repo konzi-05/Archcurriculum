@@ -10,6 +10,8 @@ export type AcademicDomain =
 
 export type BloomLevel = 'Remember' | 'Understand' | 'Apply' | 'Analyze' | 'Evaluate' | 'Create';
 
+export type AcademicLevel = '100L' | '200L' | '300L' | '400L' | '500L';
+
 export interface Course {
   id: string;
   code: string;
@@ -26,6 +28,12 @@ export interface Course {
   syllabus: string[];
   description: string;
   bloomLevel: BloomLevel;
+  // Accreditation & Curriculum Alignment Standards:
+  nucCcmasCode?: string;      // Nigerian Universities Commission CCMAS Code (e.g., CCMAS-COS101, CCMAS-IFT301)
+  futMinnaCode?: string;      // Federal University of Technology, Minna Dept. Course Code (e.g., IFT 111, IFT 211, IFT 311, IFT 411, IFT 599)
+  ieeeAcmStandard?: string;   // IEEE/ACM IT2017 & CS2023 Curricula guideline alignment
+  acmKnowledgeArea?: string;  // ACM IT2017 Body of Knowledge area (e.g., Information Management, Networking, Security)
+  academicLevel?: AcademicLevel; // 100L to 500L
 }
 
 export interface CareerTrack {
@@ -38,6 +46,7 @@ export interface CareerTrack {
   iconName: string;
   averageSalaryUSD: string;
   industryDemand: 'Critical' | 'High' | 'Moderate';
+  acmSpecializationArea?: string; // ACM/IEEE Curricula Track
 }
 
 export type Grade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
@@ -46,7 +55,11 @@ export interface StudentProfile {
   name: string;
   rollNumber: string;
   institution: string;
+  department?: string;
+  faculty?: string;
+  program?: string;
   currentSemester: number;
+  academicLevel?: AcademicLevel;
   targetCareerTrackId: string;
   completedCourseIds: string[];
   grades: Record<string, Grade>; // courseId -> Grade

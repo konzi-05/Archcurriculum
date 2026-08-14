@@ -154,20 +154,29 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                   </span>
                 )}
 
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 ml-1 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-900">{course.code}</span>
+                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 ml-1 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-900 font-mono">
+                  {course.futMinnaCode || course.code}
+                </span>
+                {course.nucCcmasCode && (
+                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">
+                    NUC: {course.nucCcmasCode}
+                  </span>
+                )}
                 <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">{course.name}</h3>
               </div>
 
               <div className="flex items-center space-x-2 sm:space-x-3 text-xs text-slate-500 dark:text-slate-400 mt-1.5 flex-wrap gap-y-0.5 font-medium">
-                <span>Semester {course.semester}</span>
+                <span>Sem {course.semester} ({course.academicLevel || 'Level'})</span>
                 <span>•</span>
-                <span>{course.credits} Credits</span>
+                <span>{course.credits} Units</span>
                 <span>•</span>
-                <span>{course.workloadHours} hrs/wk</span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded text-[10px]">
+                  {course.acmKnowledgeArea || (course.ieeeAcmStandard || 'IEEE/ACM')}
+                </span>
                 <span>•</span>
                 <span className="text-slate-700 dark:text-slate-300">{course.domain}</span>
                 <span>•</span>
-                <span>Difficulty: {course.difficulty}/5</span>
+                <span>Diff: {course.difficulty}/5</span>
               </div>
             </div>
           </div>

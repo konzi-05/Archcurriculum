@@ -77,7 +77,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
   
   const totalCredits = selectedCourses.reduce((sum, c) => sum + c.credits, 0);
   const totalWorkloadHours = selectedCourses.reduce((sum, c) => sum + c.workloadHours, 0);
-  const maxCreditsLimit = 24; // Standard AICTE maximum semester credit cap
+  const maxCreditsLimit = 24; // Standard NUC CCMAS / FUT Minna maximum semester credit cap
 
   const theoryCount = selectedCourses.filter(c => c.type === 'Core' || c.type === 'Elective').length;
   const labProjectCount = selectedCourses.filter(c => c.type === 'Lab' || c.type === 'Project').length;
@@ -305,7 +305,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
               </div>
               {totalCredits > maxCreditsLimit && (
                 <p className="text-xs text-red-600 dark:text-red-400 mt-2 font-bold flex items-center">
-                  <AlertTriangle className="w-3.5 h-3.5 mr-1 flex-shrink-0" /> Exceeds AICTE 24 Cr cap!
+                  <AlertTriangle className="w-3.5 h-3.5 mr-1 flex-shrink-0" /> Exceeds NUC / FUT Minna 24 Unit cap!
                 </p>
               )}
             </div>
@@ -341,7 +341,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
           <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-colors space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
-                Enrolled Course Schedule ({selectedCourses.length} Subjects • {totalCredits} Credits)
+                Enrolled Course Schedule ({selectedCourses.length} Subjects • {totalCredits} Units)
               </h3>
               <div className="flex items-center space-x-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                 <span className="text-purple-600 dark:text-purple-400">{selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').length} Core</span>
@@ -364,7 +364,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-[11px] font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">
                       <span>📘 Mandatory Core Courses</span>
-                      <span>{selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').reduce((s, c) => s + c.credits, 0)} Credits</span>
+                      <span>{selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').reduce((s, c) => s + c.credits, 0)} Units</span>
                     </div>
                     <div className="space-y-2">
                       {selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').map((course, idx) => (
@@ -377,12 +377,15 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                               {idx + 1}
                             </div>
                             <div>
-                              <div className="flex items-center space-x-2">
-                                <span className="font-bold text-purple-700 dark:text-purple-300 bg-purple-100/80 dark:bg-purple-900/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">{course.code}</span>
+                              <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                                <span className="font-bold text-purple-700 dark:text-purple-300 bg-purple-100/80 dark:bg-purple-900/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800 font-mono">{course.futMinnaCode || course.code}</span>
+                                {course.nucCcmasCode && (
+                                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">NUC: {course.nucCcmasCode}</span>
+                                )}
                                 <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
                               </div>
                               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                                {course.domain} • {course.credits} Credits • {course.workloadHours} hrs/wk
+                                {course.domain} • {course.credits} Units • {course.workloadHours} hrs/wk
                               </div>
                             </div>
                           </div>
@@ -413,7 +416,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                   <div className="space-y-2 pt-1">
                     <div className="flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
                       <span>🎯 Elective Specializations</span>
-                      <span>{selectedCourses.filter(c => c.type === 'Elective').reduce((s, c) => s + c.credits, 0)} Credits</span>
+                      <span>{selectedCourses.filter(c => c.type === 'Elective').reduce((s, c) => s + c.credits, 0)} Units</span>
                     </div>
                     <div className="space-y-2">
                       {selectedCourses.filter(c => c.type === 'Elective').map((course, idx) => (
@@ -426,12 +429,15 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                               {idx + 1}
                             </div>
                             <div>
-                              <div className="flex items-center space-x-2">
-                                <span className="font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">{course.code}</span>
+                              <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                                <span className="font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 font-mono">{course.futMinnaCode || course.code}</span>
+                                {course.nucCcmasCode && (
+                                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">NUC: {course.nucCcmasCode}</span>
+                                )}
                                 <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
                               </div>
                               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                                {course.domain} • {course.credits} Credits • {course.workloadHours} hrs/wk
+                                {course.domain} • {course.credits} Units • {course.workloadHours} hrs/wk
                               </div>
                             </div>
                           </div>
