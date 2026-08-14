@@ -1,6 +1,23 @@
-import React, { useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import { Sparkles, MessageSquare, Compass, SlidersHorizontal, BookOpen, Sun, Moon, HelpCircle, Database, FileCode, User as UserIcon } from 'lucide-react';
+import { 
+  Sparkles, 
+  MessageSquare, 
+  Compass, 
+  SlidersHorizontal, 
+  BookOpen, 
+  Sun, 
+  Moon, 
+  HelpCircle, 
+  Database, 
+  FileCode, 
+  User as UserIcon,
+  ChevronDown,
+  Layers,
+  CheckCircle2,
+  ExternalLink,
+  Bot
+} from 'lucide-react';
 
 interface HeaderProps {
   activeTab: 'recommendations' | 'curriculum' | 'career' | 'planner';
@@ -31,81 +48,107 @@ export const Header: React.FC<HeaderProps> = ({
   theme,
   onToggleTheme
 }) => {
-  const actionsScrollRef = useRef<HTMLDivElement>(null);
+  const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsToolsDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsToolsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <>
       <header className="h-16 bg-white/95 dark:bg-slate-900/95 border-b border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-100 sticky top-0 z-30 shrink-0 backdrop-blur-md shadow-xs transition-colors">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-full">
-          <div className="flex items-center justify-between h-full gap-2 sm:gap-4">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-8 h-full">
+          <div className="flex items-center justify-between h-full gap-2">
             
             {/* Logo & Brand */}
-            <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+            <div className="flex items-center space-x-2 sm:space-x-2.5 shrink-0">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-xs shrink-0 border border-blue-400/30">
                 <img src="/favicon.svg" alt="Curriculum Architect Logo" className="w-full h-full object-cover" />
               </div>
-              <div className="flex items-center space-x-1.5 sm:space-x-2">
-                <h1 className="text-xs sm:text-base font-extrabold tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
+              <div className="flex items-center space-x-1.5">
+                <h1 className="text-xs sm:text-sm lg:text-base font-extrabold tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
                   CURRICULUM <span className="text-blue-600 dark:text-blue-400">ARCHITECT</span>
                 </h1>
-                <span className="hidden min-[420px]:inline-block text-[9px] sm:text-[10px] bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 px-2 sm:px-2.5 py-0.5 rounded-full border border-blue-200/80 dark:border-blue-800 uppercase font-bold">
+                <span className="hidden sm:inline-block text-[9px] bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-200/80 dark:border-blue-800 uppercase font-bold">
                   B.Tech IT
                 </span>
               </div>
             </div>
 
-            {/* Navigation Tabs - Desktop (Medium & Large screens) */}
-            <nav className="hidden lg:flex items-center space-x-1 bg-slate-100/90 dark:bg-slate-800/90 p-1.5 rounded-2xl border border-slate-200/90 dark:border-slate-700">
+            {/* Navigation Tabs - Desktop (lg & xl screens) */}
+            <nav className="hidden lg:flex items-center space-x-1 bg-slate-100/90 dark:bg-slate-800/90 p-1 rounded-2xl border border-slate-200/90 dark:border-slate-700 shrink-0">
               <button
                 id="tab-recommendations"
                 onClick={() => setActiveTab('recommendations')}
-                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   activeTab === 'recommendations'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-700/70'
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Recommendations</span>
+                <span className="hidden xl:inline">Recommendations</span>
+                <span className="xl:hidden">Match</span>
               </button>
 
               <button
                 id="tab-curriculum"
                 onClick={() => setActiveTab('curriculum')}
-                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   activeTab === 'curriculum'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-700/70'
                 }`}
               >
                 <Compass className="w-3.5 h-3.5" />
-                <span>Curriculum Map</span>
+                <span className="hidden xl:inline">Curriculum Map</span>
+                <span className="xl:hidden">Curriculum</span>
               </button>
 
               <button
                 id="tab-career"
                 onClick={() => setActiveTab('career')}
-                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   activeTab === 'career'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-700/70'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>Career & Skills</span>
+                <span className="hidden xl:inline">Career & Skills</span>
+                <span className="xl:hidden">Skills</span>
               </button>
 
               <button
                 id="tab-planner"
                 onClick={() => setActiveTab('planner')}
-                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all relative ${
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all relative whitespace-nowrap ${
                   activeTab === 'planner'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-700/70'
                 }`}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>Semester Planner</span>
+                <span className="hidden xl:inline">Semester Planner</span>
+                <span className="xl:hidden">Planner</span>
                 {selectedPlanCount > 0 && (
                   <span className="ml-1 px-1.5 py-0.2 rounded-full bg-cyan-500 text-white font-bold text-[10px]">
                     {selectedPlanCount}
@@ -114,18 +157,60 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </nav>
 
-            {/* Action Tools (Responsive & Horizontally Scrollable on compact viewports) */}
-            <div 
-              ref={actionsScrollRef}
-              className="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto pb-0.5 scrollbar-none"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
+            {/* Packaged Action Toolbar (Properly fitted, grouped, and responsive) */}
+            <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
               
-              {/* Light / Dark Mode Toggle */}
+              {/* Primary AI Counselor Action */}
+              <button
+                id="btn-ai-counselor"
+                onClick={onOpenCounselor}
+                className="flex items-center space-x-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 min-h-[36px]"
+                title="Academic & Career AI Counselor"
+              >
+                <Bot className="w-3.5 h-3.5 text-cyan-200" />
+                <span className="hidden min-[480px]:inline">Counselor</span>
+              </button>
+
+              {/* Direct Quick Buttons (visible on large/desktop screens for quick access) */}
+              <div className="hidden 2xl:flex items-center space-x-1.5">
+                <button
+                  id="btn-export-database-desktop"
+                  onClick={onOpenDatabaseExport}
+                  className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/80 dark:hover:bg-blue-900/80 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 min-h-[36px] shrink-0"
+                  title="Export Database & Schemas for FYP"
+                >
+                  <FileCode className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>Export DB</span>
+                </button>
+
+                <button
+                  id="btn-cloud-account-desktop"
+                  onClick={onOpenAuth}
+                  className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 min-h-[36px] shrink-0"
+                  title="Firebase Auth & Cloud Database Sync"
+                >
+                  <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>{currentUser ? (currentUser.displayName?.split(' ')[0] || 'Cloud Synced') : 'Cloud Sync'}</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                </button>
+              </div>
+
+              {/* Profile Setup Trigger Button */}
+              <button
+                id="btn-edit-profile"
+                onClick={onOpenProfile}
+                className="bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-2xs min-h-[36px] flex items-center space-x-1.5 shrink-0"
+                title="Edit Student Profile & Target Career"
+              >
+                <UserIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                <span className="hidden sm:inline">Profile</span>
+              </button>
+
+              {/* Theme Toggle (Sun/Moon) */}
               <button
                 id="btn-theme-toggle"
                 onClick={onToggleTheme}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center min-h-[38px] min-w-[38px] sm:min-h-[40px] sm:min-w-[40px] shrink-0"
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center min-h-[36px] min-w-[36px] shrink-0"
                 title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
               >
                 {theme === 'dark' ? (
@@ -135,56 +220,118 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </button>
 
-              <button
-                id="btn-ai-counselor"
-                onClick={onOpenCounselor}
-                className="flex items-center space-x-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-2.5 sm:px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 min-h-[38px] sm:min-h-[40px]"
-                title="Academic & Career Counselor"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Counselor</span>
-              </button>
+              {/* Packaged More Tools Dropdown Menu */}
+              <div className="relative shrink-0" ref={dropdownRef}>
+                <button
+                  id="btn-header-tools-menu"
+                  onClick={() => setIsToolsDropdownOpen(!isToolsDropdownOpen)}
+                  className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-xl border text-xs font-bold transition-all min-h-[36px] ${
+                    isToolsDropdownOpen
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
+                  }`}
+                  title="More Tools & Settings"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">Tools</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isToolsDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-              <button
-                id="btn-export-database"
-                onClick={onOpenDatabaseExport}
-                className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/80 dark:hover:bg-blue-900/80 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 min-h-[38px] sm:min-h-[40px] shrink-0"
-                title="Export Database & Schemas for Final Year Project (FYP)"
-              >
-                <FileCode className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                <span className="hidden md:inline">Export DB</span>
-              </button>
+                {/* Dropdown Popover */}
+                {isToolsDropdownOpen && (
+                  <div 
+                    id="header-tools-dropdown"
+                    className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-slate-800 dark:text-slate-100"
+                  >
+                    <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        Academic Tools & Cloud
+                      </p>
+                    </div>
 
-              <button
-                id="btn-cloud-account"
-                onClick={onOpenAuth}
-                className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 min-h-[38px] sm:min-h-[40px] shrink-0"
-                title="Firebase Auth & Cloud Database Sync"
-              >
-                <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="hidden min-[480px]:inline">
-                  {currentUser ? (currentUser.displayName?.split(' ')[0] || 'Account') : 'Cloud Sync'}
-                </span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-              </button>
+                    <div className="py-1 space-y-0.5">
+                      {/* Cloud Sync & Firebase */}
+                      <button
+                        onClick={() => {
+                          setIsToolsDropdownOpen(false);
+                          onOpenAuth();
+                        }}
+                        className="w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
+                      >
+                        <div className="flex items-center space-x-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                            <Database className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-900 dark:text-white">Cloud Database Sync</span>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">
+                              {currentUser ? `Connected (${currentUser.displayName || currentUser.email})` : 'Sync semester plans across devices'}
+                            </span>
+                          </div>
+                        </div>
+                        {currentUser && <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>}
+                      </button>
 
-              <button
-                id="btn-edit-profile"
-                onClick={onOpenProfile}
-                className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs min-h-[38px] sm:min-h-[40px] shrink-0"
-              >
-                Profile
-              </button>
+                      {/* Export Database for FYP */}
+                      <button
+                        onClick={() => {
+                          setIsToolsDropdownOpen(false);
+                          if (onOpenDatabaseExport) onOpenDatabaseExport();
+                        }}
+                        className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                          <FileCode className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-900 dark:text-white">Export Database (FYP)</span>
+                          <span className="block text-[10px] text-slate-500 dark:text-slate-400">SQL, JSON & schemas for project reports</span>
+                        </div>
+                      </button>
 
-              <button
-                id="btn-app-walkthrough"
-                onClick={onOpenWalkthrough}
-                className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 shadow-2xs min-h-[38px] sm:min-h-[40px] shrink-0"
-                title="App Walkthrough & Demo"
-              >
-                <HelpCircle className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                <span className="hidden xl:inline">Walkthrough</span>
-              </button>
+                      {/* App Walkthrough Tour */}
+                      <button
+                        onClick={() => {
+                          setIsToolsDropdownOpen(false);
+                          onOpenWalkthrough();
+                        }}
+                        className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                          <HelpCircle className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-900 dark:text-white">System Walkthrough</span>
+                          <span className="block text-[10px] text-slate-500 dark:text-slate-400">Interactive tour & features guide</span>
+                        </div>
+                      </button>
+
+                      {/* Student Profile Setup */}
+                      <button
+                        onClick={() => {
+                          setIsToolsDropdownOpen(false);
+                          onOpenProfile();
+                        }}
+                        className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-800 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                          <UserIcon className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-900 dark:text-white">Student Academic Profile</span>
+                          <span className="block text-[10px] text-slate-500 dark:text-slate-400">Configure GPA, passed courses & goals</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Footer in dropdown */}
+                    <div className="pt-2 mt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between px-2 text-[10px] text-slate-400">
+                      <span>B.Tech IT Curriculum Engine</span>
+                      <span className="text-blue-600 font-bold">AICTE Compliant</span>
+                    </div>
+                  </div>
+                )}
+              </div>
 
             </div>
 
@@ -254,3 +401,4 @@ export const Header: React.FC<HeaderProps> = ({
     </>
   );
 };
+

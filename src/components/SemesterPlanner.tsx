@@ -337,9 +337,18 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
 
           </div>
 
-          {/* Selected Courses List */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-colors">
-            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide mb-3">Enrolled Course Schedule ({selectedCourses.length})</h3>
+          {/* Selected Courses List - Grouped into Core and Electives */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-colors space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                Enrolled Course Schedule ({selectedCourses.length} Subjects • {totalCredits} Credits)
+              </h3>
+              <div className="flex items-center space-x-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                <span className="text-purple-600 dark:text-purple-400">{selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').length} Core</span>
+                <span>•</span>
+                <span className="text-blue-600 dark:text-blue-400">{selectedCourses.filter(c => c.type === 'Elective').length} Electives</span>
+              </div>
+            </div>
 
             {selectedCourses.length === 0 ? (
               <div className="text-center py-8 text-slate-500 dark:text-slate-400">
@@ -349,36 +358,104 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="space-y-2.5">
-                {selectedCourses.map((course, idx) => (
-                  <div
-                    key={course.id}
-                    className="p-3.5 rounded-xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 flex items-center justify-between gap-4 text-xs"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold flex items-center justify-center border border-slate-200 dark:border-slate-700 text-xs shadow-2xs">
-                        {idx + 1}
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900">{course.code}</span>
-                          <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                          {course.domain} • {course.credits} Credits • {course.workloadHours} hrs/wk
-                        </div>
-                      </div>
+              <div className="space-y-4">
+                {/* Core Courses Section */}
+                {selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                      <span>📘 Mandatory Core Courses</span>
+                      <span>{selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').reduce((s, c) => s + c.credits, 0)} Credits</span>
                     </div>
+                    <div className="space-y-2">
+                      {selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').map((course, idx) => (
+                        <div
+                          key={course.id}
+                          className="p-3.5 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/50 flex items-center justify-between gap-4 text-xs"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 font-bold flex items-center justify-center border border-purple-200 dark:border-purple-800 text-xs shadow-2xs">
+                              {idx + 1}
+                            </div>
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <span className="font-bold text-purple-700 dark:text-purple-300 bg-purple-100/80 dark:bg-purple-900/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">{course.code}</span>
+                                <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
+                              </div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                                {course.domain} • {course.credits} Credits • {course.workloadHours} hrs/wk
+                              </div>
+                            </div>
+                          </div>
 
-                    <button
-                      onClick={() => onRemovePlanCourse(course.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                      title="Remove course"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => onOpenSyllabusModal(course)}
+                              className="px-2.5 py-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-semibold rounded-lg hover:bg-white/80 dark:hover:bg-slate-800"
+                            >
+                              Syllabus
+                            </button>
+                            <button
+                              onClick={() => onRemovePlanCourse(course.id)}
+                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                              title="Remove course"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
+                )}
+
+                {/* Electives Section */}
+                {selectedCourses.filter(c => c.type === 'Elective').length > 0 && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+                      <span>🎯 Elective Specializations</span>
+                      <span>{selectedCourses.filter(c => c.type === 'Elective').reduce((s, c) => s + c.credits, 0)} Credits</span>
+                    </div>
+                    <div className="space-y-2">
+                      {selectedCourses.filter(c => c.type === 'Elective').map((course, idx) => (
+                        <div
+                          key={course.id}
+                          className="p-3.5 rounded-xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 flex items-center justify-between gap-4 text-xs"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-300 font-bold flex items-center justify-center border border-blue-200 dark:border-blue-800 text-xs shadow-2xs">
+                              {idx + 1}
+                            </div>
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <span className="font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">{course.code}</span>
+                                <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
+                              </div>
+                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                                {course.domain} • {course.credits} Credits • {course.workloadHours} hrs/wk
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => onOpenSyllabusModal(course)}
+                              className="px-2.5 py-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-semibold rounded-lg hover:bg-white/80 dark:hover:bg-slate-800"
+                            >
+                              Syllabus
+                            </button>
+                            <button
+                              onClick={() => onRemovePlanCourse(course.id)}
+                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                              title="Remove course"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
