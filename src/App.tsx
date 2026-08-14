@@ -23,6 +23,7 @@ import { AiCounselorModal } from './components/AiCounselorModal';
 import { WelcomePanel } from './components/WelcomePanel';
 import { WelcomeWalkthroughModal } from './components/WelcomeWalkthroughModal';
 import { AuthModal } from './components/AuthModal';
+import { DatabaseExportModal } from './components/DatabaseExportModal';
 
 export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -33,6 +34,7 @@ export default function App() {
   // Firebase Auth & Cloud Sync state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isDatabaseExportModalOpen, setIsDatabaseExportModalOpen] = useState<boolean>(false);
 
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(INITIAL_STUDENT_PROFILE);
   const [recommendations, setRecommendations] = useState<RecommendedCourseResult[]>([]);
@@ -218,6 +220,7 @@ export default function App() {
         onOpenCounselor={() => setIsCounselorModalOpen(true)}
         onOpenWalkthrough={() => setIsWalkthroughModalOpen(true)}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenDatabaseExport={() => setIsDatabaseExportModalOpen(true)}
         currentUser={currentUser}
         selectedPlanCount={selectedPlanCourseIds.length}
         totalCredits={recommendations.filter(r => selectedPlanCourseIds.includes(r.course.id)).reduce((sum, r) => sum + r.course.credits, 0)}
@@ -274,6 +277,7 @@ export default function App() {
             isLoadingAiInsight={isLoadingAiInsight}
             onRequestAiInsight={handleRequestAiInsight}
             onExportPlan={handleExportPlan}
+            onOpenDatabaseExport={() => setIsDatabaseExportModalOpen(true)}
             onOpenSyllabusModal={course => setActiveSyllabusCourse(course)}
             onTogglePlanCourse={handleTogglePlanCourse}
           />
@@ -319,6 +323,16 @@ export default function App() {
         <AuthModal
           user={currentUser}
           onClose={() => setIsAuthModalOpen(false)}
+          onOpenDatabaseExport={() => setIsDatabaseExportModalOpen(true)}
+        />
+      )}
+
+      {isDatabaseExportModalOpen && (
+        <DatabaseExportModal
+          studentProfile={studentProfile}
+          selectedPlanCourseIds={selectedPlanCourseIds}
+          currentUser={currentUser}
+          onClose={() => setIsDatabaseExportModalOpen(false)}
         />
       )}
 

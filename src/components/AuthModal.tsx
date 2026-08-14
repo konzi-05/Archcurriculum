@@ -24,9 +24,10 @@ import {
 interface AuthModalProps {
   user: User | null;
   onClose: () => void;
+  onOpenDatabaseExport?: () => void;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose }) => {
+export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onOpenDatabaseExport }) => {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -171,6 +172,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose }) => {
                   </span>
                   <span className="font-mono text-[10px] text-slate-400">UID: {user.uid.substring(0, 6)}...</span>
                 </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (onOpenDatabaseExport) onOpenDatabaseExport();
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800 transition-colors flex items-center justify-center space-x-2 min-h-[42px]"
+                >
+                  <Database className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span>Export Database for Final Year Project (FYP)</span>
+                </button>
               </div>
 
               <button
@@ -323,6 +338,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose }) => {
                   className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white font-medium hover:underline"
                 >
                   Continue as Guest
+                </button>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    if (onOpenDatabaseExport) onOpenDatabaseExport();
+                  }}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center space-x-2 text-xs min-h-[38px]"
+                >
+                  <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span>Export Database for Final Year Project (FYP)</span>
                 </button>
               </div>
 

@@ -17,6 +17,7 @@ interface SemesterPlannerProps {
   isLoadingAiInsight: boolean;
   onRequestAiInsight: () => void;
   onExportPlan: () => void;
+  onOpenDatabaseExport?: () => void;
   onOpenSyllabusModal: (course: Course) => void;
   onTogglePlanCourse: (courseId: string) => void;
 }
@@ -30,6 +31,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
   isLoadingAiInsight,
   onRequestAiInsight,
   onExportPlan,
+  onOpenDatabaseExport,
   onOpenSyllabusModal,
   onTogglePlanCourse
 }) => {
@@ -247,6 +249,17 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                   className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors"
                 >
                   Clear
+                </button>
+              )}
+
+              {onOpenDatabaseExport && (
+                <button
+                  onClick={onOpenDatabaseExport}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/70 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800 transition-colors"
+                  title="Export complete database schemas and records for Final Year Project report"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export DB (FYP)</span>
                 </button>
               )}
 

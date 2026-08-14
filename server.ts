@@ -276,6 +276,30 @@ ${(aiInsight?.suggestedCertifications || []).map((cert: string) => `- ${cert}`).
     res.json({ markdown: markdownContent, filename: `BTech_IT_Curriculum_Plan_${profile?.rollNumber || '2026'}.md` });
   });
 
+  // Export Complete Project Database & Schemas for FYP Document
+  app.post('/api/database/export', (req, res) => {
+    const { profile, selectedCourseIds } = req.body;
+    
+    const exportBundle = {
+      metadata: {
+        exportDate: new Date().toISOString(),
+        projectTitle: "Curriculum Architect - B.Tech IT Degree Planner",
+        databaseEngine: "Google Cloud Firestore",
+        googleCloudProjectId: "elevated-etching-g40ks",
+        firestoreDatabaseId: "ai-studio-btechitcurriculu-284b15ea-80dc-4285-9d90-9fb47f08a2ac",
+        securityModel: "Zero-Trust ABAC with Granular Security Rules"
+      },
+      collections: {
+        studentProfiles: [profile || {}],
+        semesterPlans: [{ selectedCourseIds: selectedCourseIds || [] }],
+        curriculumCourses: BTECH_IT_COURSES,
+        careerPathways: CAREER_TRACKS
+      }
+    };
+
+    res.json(exportBundle);
+  });
+
   // --- VITE / STATIC MIDDLEWARE ---
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
