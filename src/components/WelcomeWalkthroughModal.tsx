@@ -98,10 +98,10 @@ export const WelcomeWalkthroughModal: React.FC<WelcomeWalkthroughModalProps> = (
             <div>
               <div className="inline-flex items-center space-x-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full mb-1">
                 <Sparkles className="w-3 h-3 text-cyan-300" />
-                <span>AICTE B.Tech IT Model Curriculum</span>
+                <span>B.Tech IT Degree & Course Planner</span>
               </div>
               <h2 className="text-xl font-extrabold text-white tracking-tight">
-                Curriculum Architect Tour & Guided Walkthrough
+                Quick Guide & Interactive Student Demos
               </h2>
             </div>
           </div>
@@ -125,7 +125,7 @@ export const WelcomeWalkthroughModal: React.FC<WelcomeWalkthroughModalProps> = (
             }`}
           >
             <GraduationCap className="w-4 h-4" />
-            <span>Platform Overview</span>
+            <span>How This App Helps You</span>
           </button>
 
           <button
@@ -137,7 +137,7 @@ export const WelcomeWalkthroughModal: React.FC<WelcomeWalkthroughModalProps> = (
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>Core Modules Tour</span>
+            <span>Key Features</span>
           </button>
 
           <button
@@ -149,7 +149,7 @@ export const WelcomeWalkthroughModal: React.FC<WelcomeWalkthroughModalProps> = (
             }`}
           >
             <Play className="w-4 h-4 text-cyan-500 fill-cyan-500" />
-            <span>Interactive Demo Personas</span>
+            <span>Try Sample Student Profiles</span>
           </button>
 
           <button
@@ -161,7 +161,7 @@ export const WelcomeWalkthroughModal: React.FC<WelcomeWalkthroughModalProps> = (
             }`}
           >
             <HelpCircleIcon className="w-4 h-4" />
-            <span>How to Use Guide</span>
+            <span>Step-by-Step Guide</span>
           </button>
         </div>
 

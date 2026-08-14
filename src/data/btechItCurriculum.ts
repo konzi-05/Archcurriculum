@@ -1,4 +1,4 @@
-import { Course, CareerTrack } from '../types/curriculum';
+import { Course, CareerTrack, StudentProfile } from '../types/curriculum';
 
 export const BTECH_IT_COURSES: Course[] = [
   // --- SEMESTER 1 ---
@@ -696,7 +696,7 @@ export const CAREER_TRACKS: CareerTrack[] = [
   }
 ];
 
-export const INITIAL_STUDENT_PROFILE = {
+export const INITIAL_STUDENT_PROFILE: StudentProfile = {
   name: 'Alex Rivera',
   rollNumber: '21IT1084',
   institution: 'School of Information Technology',

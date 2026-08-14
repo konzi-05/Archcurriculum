@@ -13,6 +13,7 @@ import {
 } from './services/firebase';
 
 import { Header } from './components/Header';
+import { TopStudentDashboardBar } from './components/TopStudentDashboardBar';
 import { ProfileSetup } from './components/ProfileSetup';
 import { RecommendationDashboard } from './components/RecommendationDashboard';
 import { CurriculumMap } from './components/CurriculumMap';
@@ -37,6 +38,7 @@ export default function App() {
   const [isDatabaseExportModalOpen, setIsDatabaseExportModalOpen] = useState<boolean>(false);
 
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(INITIAL_STUDENT_PROFILE);
+  const [recommendationMode, setRecommendationMode] = useState<'semantic-embeddings' | 'legacy-tfidf'>('semantic-embeddings');
   const [recommendations, setRecommendations] = useState<RecommendedCourseResult[]>([]);
   const [skillGapMatrix, setSkillGapMatrix] = useState<SkillGapItem[]>([]);
   const [selectedPlanCourseIds, setSelectedPlanCourseIds] = useState<string[]>([]);
@@ -106,9 +108,9 @@ export default function App() {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  // Recalculate recommendations & skill gap when profile updates
+  // Recalculate recommendations & skill gap when profile or mode updates
   useEffect(() => {
-    const recs = generateCourseRecommendations(studentProfile);
+    const recs = generateCourseRecommendations(studentProfile, recommendationMode);
     const gaps = calculateSkillGapMatrix(studentProfile);
     setRecommendations(recs);
     setSkillGapMatrix(gaps);
@@ -118,7 +120,11 @@ export default function App() {
       const top3Ids = recs.filter(r => r.prerequisitesMet).slice(0, 3).map(r => r.course.id);
       setSelectedPlanCourseIds(top3Ids);
     }
-  }, [studentProfile]);
+  }, [studentProfile, recommendationMode]);
+
+  const toggleRecommendationMode = () => {
+    setRecommendationMode(prev => prev === 'semantic-embeddings' ? 'legacy-tfidf' : 'semantic-embeddings');
+  };
 
   const handleSaveProfile = (updatedProfile: StudentProfile) => {
     setStudentProfile(updatedProfile);
@@ -229,8 +235,18 @@ export default function App() {
       />
 
       {/* Main View Container */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 pb-24 md:pb-10 space-y-6 sm:space-y-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 pb-24 md:pb-10 space-y-5 sm:space-y-6">
         
+        {/* Interactive Top Student Academic Status & Metrics Bar */}
+        <TopStudentDashboardBar
+          studentProfile={studentProfile}
+          onUpdateProfile={(updated) => handleSaveProfile({ ...studentProfile, ...updated })}
+          onOpenProfileModal={() => setIsProfileModalOpen(true)}
+          onOpenCounselorModal={() => setIsCounselorModalOpen(true)}
+          selectedPlanCourseIds={selectedPlanCourseIds}
+          totalPlannedCredits={recommendations.filter(r => selectedPlanCourseIds.includes(r.course.id)).reduce((sum, r) => sum + r.course.credits, 0)}
+        />
+
         {/* Welcome Section & Platform Introduction Banner */}
         <WelcomePanel
           onOpenWalkthrough={() => setIsWalkthroughModalOpen(true)}
@@ -247,6 +263,8 @@ export default function App() {
             onTogglePlanCourse={handleTogglePlanCourse}
             onOpenSyllabusModal={course => setActiveSyllabusCourse(course)}
             onOpenCounselor={() => setIsCounselorModalOpen(true)}
+            recommendationMode={recommendationMode}
+            onToggleRecommendationMode={toggleRecommendationMode}
           />
         )}
 
@@ -306,6 +324,9 @@ export default function App() {
         <AiCounselorModal
           profile={studentProfile}
           currentUser={currentUser}
+          selectedPlanCourseIds={selectedPlanCourseIds}
+          onTogglePlanCourse={handleTogglePlanCourse}
+          onSelectCourse={setActiveSyllabusCourse}
           onClose={() => setIsCounselorModalOpen(false)}
         />
       )}

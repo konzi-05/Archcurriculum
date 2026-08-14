@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { RecommendedCourseResult, StudentProfile, Course } from '../types/curriculum';
 import { CAREER_TRACKS } from '../data/btechItCurriculum';
-import { Sparkles, CheckCircle2, AlertTriangle, ChevronRight, Plus, Check, Filter, BookOpen, Layers, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertTriangle, ChevronRight, ChevronLeft, Plus, Check, Filter, BookOpen, Layers, ShieldCheck, HelpCircle, Binary, Cpu } from 'lucide-react';
+import { SemanticVectorModal } from './SemanticVectorModal';
 
 interface RecommendationDashboardProps {
   recommendations: RecommendedCourseResult[];
@@ -10,6 +11,8 @@ interface RecommendationDashboardProps {
   onTogglePlanCourse: (courseId: string) => void;
   onOpenSyllabusModal: (course: Course) => void;
   onOpenCounselor: () => void;
+  recommendationMode?: 'semantic-embeddings' | 'legacy-tfidf';
+  onToggleRecommendationMode?: () => void;
 }
 
 export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = ({
@@ -18,11 +21,23 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
   selectedPlanCourseIds,
   onTogglePlanCourse,
   onOpenSyllabusModal,
-  onOpenCounselor
+  onOpenCounselor,
+  recommendationMode = 'semantic-embeddings',
+  onToggleRecommendationMode
 }) => {
   const [selectedDomain, setSelectedDomain] = useState<string>('All');
   const [prereqOnlyFilter, setPrereqOnlyFilter] = useState<boolean>(false);
   const [minMatchFilter, setMinMatchFilter] = useState<number>(0);
+  const [isSemanticModalOpen, setIsSemanticModalOpen] = useState<boolean>(false);
+  const [inspectingCourseResult, setInspectingCourseResult] = useState<RecommendedCourseResult | null>(null);
+  const domainScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollDomains = (direction: 'left' | 'right') => {
+    if (domainScrollRef.current) {
+      const offset = direction === 'left' ? -180 : 180;
+      domainScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
 
   const targetTrack = CAREER_TRACKS.find(t => t.id === studentProfile.targetCareerTrackId) || CAREER_TRACKS[0];
 
@@ -35,6 +50,11 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
 
   const domains = ['All', 'AI & Data Science', 'Software Engineering', 'Cloud & Systems', 'Cybersecurity & Networks', 'Hardware & Embedded', 'Math & Foundational CS'];
 
+  const handleOpenVectorInspector = (courseRes?: RecommendedCourseResult) => {
+    setInspectingCourseResult(courseRes || recommendations[0] || null);
+    setIsSemanticModalOpen(true);
+  };
+
   return (
     <div className="space-y-8">
       
@@ -45,37 +65,56 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
         <div className="lg:col-span-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 text-white rounded-2xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-md shadow-indigo-100">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
           <div>
-            <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-100 bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-full mb-3.5">
-              <Sparkles className="w-3.5 h-3.5 text-blue-200" />
-              <span>Smart Elective Recommendation Engine</span>
+            <div className="flex flex-wrap items-center gap-2 mb-3.5">
+              <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-100 bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-full">
+                <Sparkles className="w-3.5 h-3.5 text-blue-200" />
+                <span>Smart Course Suggestions</span>
+              </div>
+
+              <div className="inline-flex items-center space-x-1.5 text-[11px] font-bold uppercase tracking-wider text-cyan-200 bg-cyan-950/40 border border-cyan-400/30 px-3 py-1.5 rounded-full">
+                <Binary className="w-3 h-3 text-cyan-300" />
+                <span>AI Skill Matching</span>
+              </div>
             </div>
+
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-snug">
-              Recommended Electives for <span className="text-cyan-300 font-extrabold bg-white/10 px-3 py-1 rounded-lg border border-cyan-300/30 inline-block my-1">{targetTrack.title}</span>
+              Best Elective Courses for <span className="text-cyan-300 font-extrabold bg-white/10 px-3 py-1 rounded-lg border border-cyan-300/30 inline-block my-1">{targetTrack.title}</span>
             </h2>
             <p className="text-sm text-indigo-100 mt-3 max-w-2xl leading-relaxed">
-              Personalized course recommendations tailored for Semester {studentProfile.currentSemester} prerequisites, credit limits, and core industry competencies required across Information Technology and target career tracks like {targetTrack.targetRole}.
+              Here are elective subjects picked specifically for you in Semester {studentProfile.currentSemester}. We check prerequisites so you're ready, balance your study hours, and pick classes that teach you the skills needed for your dream career.
             </p>
           </div>
 
           <div className="mt-8 pt-5 border-t border-white/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
             <div className="flex items-center space-x-6 sm:space-x-8">
               <div>
-                <span className="text-[10px] text-indigo-200 uppercase tracking-wider font-semibold block mb-0.5">Eligible Courses</span>
-                <span className="text-lg font-extrabold text-white">{recommendations.filter(r => r.prerequisitesMet).length} / {recommendations.length}</span>
+                <span className="text-[10px] text-indigo-200 uppercase tracking-wider font-semibold block mb-0.5">Ready to Take</span>
+                <span className="text-lg font-extrabold text-white">{recommendations.filter(r => r.prerequisitesMet).length} of {recommendations.length}</span>
               </div>
               <div className="h-8 w-px bg-white/20"></div>
               <div>
-                <span className="text-[10px] text-indigo-200 uppercase tracking-wider font-semibold block mb-0.5">Specialization Electives</span>
-                <span className="text-lg font-extrabold text-cyan-200">{targetTrack.recommendedElectiveIds.length} Modules</span>
+                <span className="text-[10px] text-indigo-200 uppercase tracking-wider font-semibold block mb-0.5">Career Electives</span>
+                <span className="text-lg font-extrabold text-cyan-200">{targetTrack.recommendedElectiveIds.length} Subjects</span>
               </div>
             </div>
 
-            <button
-              onClick={onOpenCounselor}
-              className="text-xs font-bold text-white bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl transition-all self-start sm:self-auto"
-            >
-              Ask Academic Counselor →
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleOpenVectorInspector()}
+                className="text-xs font-bold text-white bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5"
+                title="See how AI compares course topics to your career goals"
+              >
+                <Cpu className="w-3.5 h-3.5 text-cyan-300" />
+                <span>How AI Matches Courses</span>
+              </button>
+
+              <button
+                onClick={onOpenCounselor}
+                className="text-xs font-bold text-slate-900 bg-white hover:bg-blue-50 px-4 py-2 rounded-xl transition-all self-start sm:self-auto shadow-xs"
+              >
+                Ask AI Advisor →
+              </button>
+            </div>
           </div>
         </div>
 
@@ -83,23 +122,23 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
         <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-7 flex flex-col justify-between space-y-5 shadow-xs transition-colors">
           <div className="space-y-4">
             <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
-              Curriculum Alignment
+              Degree & Standard Check
             </h3>
             
             <div className="space-y-4 text-xs">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-slate-600 dark:text-slate-400 font-semibold">ABET Standard</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">98.4%</span>
+                  <span className="text-slate-600 dark:text-slate-400 font-semibold">Career Skill Match</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">96.8%</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full w-[98%] rounded-full"></div>
+                  <div className="bg-emerald-500 h-full w-[96%] rounded-full"></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-slate-600 dark:text-slate-400 font-semibold">IEEE/ACM Alignment</span>
+                  <span className="text-slate-600 dark:text-slate-400 font-semibold">Curriculum Standards</span>
                   <span className="text-blue-600 dark:text-blue-400 font-bold">94.2%</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -110,49 +149,93 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
           </div>
 
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>AICTE Credit Limit: 24.0 Cr</span>
-            <span className="text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-md font-bold text-[11px]">Compliant</span>
+            <span>Credit Limit: 24.0 Max</span>
+            <span className="text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-md font-bold text-[11px]">In Safe Limit</span>
           </div>
         </div>
 
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs shadow-xs transition-colors">
+      {/* Filter Toolbar & Model Representation Switcher */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 text-xs shadow-xs transition-colors">
         
-        {/* Domain Filters */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
-          <Filter className="w-4 h-4 text-slate-400 flex-shrink-0 mr-1" />
-          <span className="font-bold text-slate-500 dark:text-slate-400 text-xs flex-shrink-0 mr-1">Domain:</span>
-          {domains.map(dom => (
+        {/* Domain Filters with Scroll Controls */}
+        <div className="flex items-center gap-2 w-full xl:w-auto overflow-hidden">
+          <div className="flex items-center space-x-1.5 shrink-0 mr-1">
+            <Filter className="w-4 h-4 text-slate-400" />
+            <span className="font-bold text-slate-700 dark:text-slate-300 text-xs">Subject Area:</span>
+          </div>
+
+          <div className="flex items-center space-x-1 shrink-0">
             <button
-              key={dom}
-              onClick={() => setSelectedDomain(dom)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs border whitespace-nowrap transition-all font-semibold ${
-                selectedDomain === dom
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
-                  : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
-              }`}
+              onClick={() => scrollDomains('left')}
+              className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              title="Scroll subject areas left"
             >
-              {dom}
+              <ChevronLeft className="w-3.5 h-3.5" />
             </button>
-          ))}
+          </div>
+
+          <div 
+            ref={domainScrollRef}
+            className="flex items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0 scroll-smooth scrollbar-none"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {domains.map(dom => (
+              <button
+                key={dom}
+                onClick={() => setSelectedDomain(dom)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs border whitespace-nowrap transition-all font-semibold shrink-0 ${
+                  selectedDomain === dom
+                    ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
+                    : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                {dom}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center space-x-1 shrink-0">
+            <button
+              onClick={() => scrollDomains('right')}
+              className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              title="Scroll subject areas right"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
-        {/* Checkbox & Min Match */}
-        <div className="flex items-center space-x-5 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-100 dark:border-slate-800">
-          <label className="flex items-center space-x-2.5 cursor-pointer text-slate-700 dark:text-slate-300 font-medium select-none text-xs">
+        {/* Checkbox, Mode Switcher & Min Match */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full xl:w-auto justify-between xl:justify-end border-t xl:border-t-0 pt-3 xl:pt-0 border-slate-100 dark:border-slate-800">
+          {onToggleRecommendationMode && (
+            <button
+              onClick={onToggleRecommendationMode}
+              className={`px-3 py-1.5 rounded-xl font-bold border transition-colors flex items-center space-x-1.5 ${
+                recommendationMode === 'semantic-embeddings'
+                  ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+              }`}
+              title="Switch between smart topic understanding and exact keyword matching"
+            >
+              <Binary className="w-3 h-3" />
+              <span>{recommendationMode === 'semantic-embeddings' ? 'Smart AI Match' : 'Keyword Match'}</span>
+            </button>
+          )}
+
+          <label className="flex items-center space-x-2 cursor-pointer text-slate-700 dark:text-slate-300 font-medium select-none text-xs">
             <input
               type="checkbox"
               checked={prereqOnlyFilter}
               onChange={e => setPrereqOnlyFilter(e.target.checked)}
               className="accent-blue-600 rounded border-slate-300 dark:border-slate-700 w-4 h-4"
             />
-            <span>Prerequisites Met Only</span>
+            <span>Ready to Take</span>
           </label>
 
-          <div className="flex items-center space-x-2.5">
-            <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">Min Match:</span>
+          <div className="flex items-center space-x-2">
+            <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">Min:</span>
             <input
               type="range"
               min="0"
@@ -160,9 +243,9 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
               step="10"
               value={minMatchFilter}
               onChange={e => setMinMatchFilter(Number(e.target.value))}
-              className="w-20 accent-blue-600"
+              className="w-16 sm:w-20 accent-blue-600"
             />
-            <span className="text-blue-600 dark:text-blue-400 font-bold text-xs w-8">{minMatchFilter}%</span>
+            <span className="text-blue-600 dark:text-blue-400 font-bold text-xs w-7">{minMatchFilter}%</span>
           </div>
         </div>
 
@@ -188,6 +271,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
           filteredRecommendations.map((item, index) => {
             const course = item.course;
             const inPlanner = selectedPlanCourseIds.includes(course.id);
+            const semanticScore = item.breakdown.semanticEmbeddingScore || item.matchScore;
 
             return (
               <div
@@ -210,17 +294,17 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                         {/* Status Tags */}
                         {item.prerequisitesMet ? (
                           <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                            Prerequisites Satisfied
+                            Ready to Take
                           </span>
                         ) : (
                           <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-                            Prerequisites Needed
+                            Need Previous Courses First
                           </span>
                         )}
 
                         {course.type === 'Core' ? (
                           <span className="text-[10px] text-purple-700 dark:text-purple-300 font-bold uppercase bg-purple-50 dark:bg-purple-950/60 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
-                            Core Subject
+                            Required Course
                           </span>
                         ) : (
                           <span className="text-[10px] text-blue-700 dark:text-blue-300 font-bold uppercase bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
@@ -233,7 +317,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                       </div>
 
                       <div className="flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400 mt-1.5 flex-wrap gap-y-0.5 font-medium">
-                        <span>Sem {course.semester}</span>
+                        <span>Semester {course.semester}</span>
                         <span>•</span>
                         <span>{course.credits} Credits</span>
                         <span>•</span>
@@ -252,7 +336,9 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                       }`}>
                         {item.matchScore}%
                       </div>
-                      <div className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500">Match Score</div>
+                      <div className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500">
+                        {recommendationMode === 'semantic-embeddings' ? 'Overall Match' : 'Keyword Match'}
+                      </div>
                     </div>
 
                     <button
@@ -267,12 +353,12 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                       {inPlanner ? (
                         <>
                           <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          <span>In Plan</span>
+                          <span>In My Plan</span>
                         </>
                       ) : (
                         <>
                           <Plus className="w-3.5 h-3.5" />
-                          <span>Add to Plan</span>
+                          <span>Add to My Plan</span>
                         </>
                       )}
                     </button>
@@ -288,7 +374,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 my-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 text-[11px]">
                   <div>
                     <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1 font-medium">
-                      <span>Prerequisites</span>
+                      <span>Prerequisites Met</span>
                       <span className="text-slate-900 dark:text-white font-bold">{item.breakdown.prerequisiteScore}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -299,16 +385,16 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                   <div>
                     <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1 font-medium">
                       <span>Career Relevance</span>
-                      <span className="text-slate-900 dark:text-white font-bold">{item.breakdown.careerMatchScore}%</span>
+                      <span className="text-blue-600 dark:text-blue-400 font-bold">{semanticScore}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${item.breakdown.careerMatchScore}%` }}></div>
+                      <div className="h-full bg-cyan-600 rounded-full" style={{ width: `${semanticScore}%` }}></div>
                     </div>
                   </div>
 
                   <div>
                     <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1 font-medium">
-                      <span>Skill Value</span>
+                      <span>Skills You'll Learn</span>
                       <span className="text-slate-900 dark:text-white font-bold">{item.breakdown.skillGapScore}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -318,7 +404,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
 
                   <div>
                     <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1 font-medium">
-                      <span>Workload Balance</span>
+                      <span>Study Load Fit</span>
                       <span className="text-slate-900 dark:text-white font-bold">{item.breakdown.workloadBalanceScore}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -327,7 +413,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                   </div>
                 </div>
 
-                {/* Reasons / Warnings / Syllabus Link */}
+                {/* Reasons / Warnings / Vector & Syllabus Links */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs pt-3 border-t border-slate-100 dark:border-slate-800">
                   <div className="space-y-1">
                     {item.matchReasons.map((reason, idx) => (
@@ -345,14 +431,25 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                     ))}
                   </div>
 
-                  <button
-                    onClick={() => onOpenSyllabusModal(course)}
-                    className="flex items-center space-x-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-semibold transition-colors self-start sm:self-auto"
-                  >
-                    <BookOpen className="w-3.5 h-3.5" />
-                    <span>View Syllabus</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center space-x-4 self-start sm:self-auto">
+                    <button
+                      onClick={() => handleOpenVectorInspector(item)}
+                      className="flex items-center space-x-1 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-xs font-semibold transition-colors"
+                      title="See the AI topic breakdown for this course"
+                    >
+                      <Binary className="w-3.5 h-3.5" />
+                      <span>Why This Course?</span>
+                    </button>
+
+                    <button
+                      onClick={() => onOpenSyllabusModal(course)}
+                      className="flex items-center space-x-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-semibold transition-colors"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>View Syllabus</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
               </div>
@@ -360,6 +457,16 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
           })
         )}
       </div>
+
+      {/* Semantic Vector Inspector Modal */}
+      {isSemanticModalOpen && (
+        <SemanticVectorModal
+          courseResult={inspectingCourseResult}
+          studentProfile={studentProfile}
+          recommendations={recommendations}
+          onClose={() => setIsSemanticModalOpen(false)}
+        />
+      )}
 
     </div>
   );

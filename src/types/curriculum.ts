@@ -56,12 +56,35 @@ export interface StudentProfile {
   interests: string[];
 }
 
+export interface SemanticEmbeddingVector {
+  vector: number[];
+  dimensions: number;
+  domainWeights: Record<string, number>;
+  latentConcepts: string[];
+}
+
+export interface SemanticMatchDetails {
+  cosineSimilarity: number; // 0 to 100%
+  euclideanDistance: number;
+  semanticOverlapConcepts: string[];
+  embeddingModel: string;
+  tfidfScore: number; // For comparative analysis in FYP
+  tfidfVsEmbeddingDelta: number;
+  dimensionBreakdown: Array<{
+    dimension: string;
+    studentTrackWeight: number;
+    courseWeight: number;
+    alignment: number;
+  }>;
+}
+
 export interface RecommendationBreakdown {
   prerequisiteScore: number; // 0 to 100
   careerMatchScore: number;  // 0 to 100
   skillGapScore: number;     // 0 to 100
   workloadBalanceScore: number; // 0 to 100
   difficultyFitScore: number; // 0 to 100
+  semanticEmbeddingScore?: number; // 0 to 100
 }
 
 export interface RecommendedCourseResult {
@@ -72,6 +95,7 @@ export interface RecommendedCourseResult {
   warningFlags: string[];
   prerequisitesMet: boolean;
   missingPrerequisites: Course[];
+  semanticDetails?: SemanticMatchDetails;
 }
 
 export interface SkillGapItem {
