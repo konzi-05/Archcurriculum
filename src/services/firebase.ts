@@ -236,6 +236,37 @@ export const subscribeSemesterPlan = (uid: string, callback: (selectedCourseIds:
   });
 };
 
+// Save Programme Rules to Firestore `programmeRules/{uid}`
+export const saveProgrammeRulesCloud = async (uid: string, rules: any) => {
+  if (!uid) return;
+  try {
+    const rulesRef = doc(db, 'programmeRules', uid);
+    await setDoc(rulesRef, {
+      uid,
+      rules,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (err) {
+    console.warn('Save programme rules cloud error:', err);
+  }
+};
+
+// Subscribe to real-time Programme Rules updates
+export const subscribeProgrammeRules = (uid: string, callback: (rules: any | null) => void) => {
+  if (!uid) return () => {};
+  const rulesRef = doc(db, 'programmeRules', uid);
+  return onSnapshot(rulesRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      callback(data.rules || null);
+    } else {
+      callback(null);
+    }
+  }, (error) => {
+    console.warn('Error listening to programme rules:', error);
+  });
+};
+
 // Save Counselor Chat History to Firestore `counselorChats/{uid}`
 export const saveCounselorChatCloud = async (uid: string, messages: any[]) => {
   if (!uid) return;

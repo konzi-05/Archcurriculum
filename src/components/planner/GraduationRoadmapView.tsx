@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Course, StudentProfile, CareerTrack } from '../../types/curriculum';
+import { Course, StudentProfile, CareerTrack, AcademicProgrammeRules } from '../../types/curriculum';
 import { BTECH_IT_COURSES, CAREER_TRACKS } from '../../data/btechItCurriculum';
 import { Layers, AlertTriangle, CheckCircle2, ChevronRight, RefreshCw, Plus, Sparkles, BookOpen, Calendar, ShieldCheck } from 'lucide-react';
 
@@ -7,6 +7,7 @@ interface GraduationRoadmapViewProps {
   studentProfile: StudentProfile;
   selectedPlanCourseIds: string[];
   customSemesterMap: Record<string, number>;
+  programmeRules?: AcademicProgrammeRules;
   onUpdateCourseSemester: (courseId: string, targetSemester: number) => void;
   onAutoGenerateRoadmap: () => void;
   onOpenSyllabusModal: (course: Course) => void;
@@ -17,6 +18,7 @@ export const GraduationRoadmapView: React.FC<GraduationRoadmapViewProps> = ({
   studentProfile,
   selectedPlanCourseIds,
   customSemesterMap,
+  programmeRules,
   onUpdateCourseSemester,
   onAutoGenerateRoadmap,
   onOpenSyllabusModal,
@@ -24,6 +26,7 @@ export const GraduationRoadmapView: React.FC<GraduationRoadmapViewProps> = ({
 }) => {
   const [selectedSemesterFilter, setSelectedSemesterFilter] = useState<number | 'ALL'>('ALL');
   const targetTrack = CAREER_TRACKS.find(t => t.id === studentProfile.targetCareerTrackId) || CAREER_TRACKS[0];
+  const maxSemesterUnits = programmeRules?.maxSemesterUnits ?? 24;
 
   // Get effective semester for each course (from customSemesterMap or default course.semester)
   const getCourseSemester = (course: Course): number => {
@@ -196,20 +199,20 @@ export const GraduationRoadmapView: React.FC<GraduationRoadmapViewProps> = ({
                         )}
                       </h4>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                        {semCourses.length} Subjects • {semCredits} / 24 Credits • {semWorkload} hrs/wk
+                        {semCourses.length} Subjects • {semCredits} / {maxSemesterUnits} Credits • {semWorkload} hrs/wk
                       </div>
                     </div>
                   </div>
 
                   {/* Credit Bar Indicator */}
                   <div className="text-right">
-                    <span className={`text-xs font-bold ${semCredits > 24 ? 'text-red-600' : 'text-slate-700 dark:text-slate-300'}`}>
+                    <span className={`text-xs font-bold ${semCredits > maxSemesterUnits ? 'text-red-600' : 'text-slate-700 dark:text-slate-300'}`}>
                       {semCredits} Cr
                     </span>
                     <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-1">
                       <div
-                        className={`h-full rounded-full ${semCredits > 24 ? 'bg-red-500' : 'bg-blue-600'}`}
-                        style={{ width: `${Math.min(100, (semCredits / 24) * 100)}%` }}
+                        className={`h-full rounded-full ${semCredits > maxSemesterUnits ? 'bg-red-500' : 'bg-blue-600'}`}
+                        style={{ width: `${Math.min(100, (semCredits / maxSemesterUnits) * 100)}%` }}
                       ></div>
                     </div>
                   </div>

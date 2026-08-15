@@ -1,27 +1,37 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StudentProfile, CareerTrack, Course } from '../types/curriculum';
+import { StudentProfile, CareerTrack, Course, AcademicProgrammeRules } from '../types/curriculum';
 import { CAREER_TRACKS, BTECH_IT_COURSES } from '../data/btechItCurriculum';
+import { evaluateSiwesEligibility } from '../services/siwesEngine';
+import { evaluateCurriculumCompliance } from '../services/complianceEngine';
 import { 
   GraduationCap, Sparkles, SlidersHorizontal, BookOpen, 
   ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, 
   ShieldCheck, Bot, Clock, Award, Layers, User, ChevronDown, ChevronUp,
-  Cpu, ArrowRight, Zap, Target
+  Cpu, ArrowRight, Zap, Target, Settings2, Building2
 } from 'lucide-react';
 
 interface TopStudentDashboardBarProps {
   studentProfile: StudentProfile;
+  programmeRules?: AcademicProgrammeRules;
   onUpdateProfile: (updated: Partial<StudentProfile>) => void;
   onOpenProfileModal: () => void;
+  onOpenProgrammeRulesModal?: () => void;
   onOpenCounselorModal: () => void;
+  onOpenSiwesPortal?: () => void;
+  onOpenCompliance?: () => void;
   selectedPlanCourseIds: string[];
   totalPlannedCredits: number;
 }
 
 export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
   studentProfile,
+  programmeRules,
   onUpdateProfile,
   onOpenProfileModal,
+  onOpenProgrammeRulesModal,
   onOpenCounselorModal,
+  onOpenSiwesPortal,
+  onOpenCompliance,
   selectedPlanCourseIds,
   totalPlannedCredits
 }) => {
@@ -43,16 +53,56 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
   const semesters = [1, 2, 3, 4, 5, 6, 7, 8];
   const targetTrack = CAREER_TRACKS.find(t => t.id === studentProfile.targetCareerTrackId) || CAREER_TRACKS[0];
 
+  // Dynamic Programme Rules Thresholds
+  const minSemesterUnits = programmeRules?.minSemesterUnits ?? 15;
+  const maxSemesterUnits = programmeRules?.maxSemesterUnits ?? 24;
+  const totalDegreeCredits = studentProfile.entryMode === 'Direct_Entry'
+    ? (programmeRules?.directEntryGraduationUnits ?? 120)
+    : (programmeRules?.graduationRequirementUnits ?? 150);
+
   // Calculate completed credits
   const completedCourses = BTECH_IT_COURSES.filter(c => studentProfile.completedCourseIds?.includes(c.id));
   const completedCredits = completedCourses.reduce((sum, c) => sum + c.credits, 0);
-  const totalDegreeCredits = 160.0; // NUC CCMAS / FUT Minna B.Tech IT Standard
   const degreeProgressPercent = Math.min(100, Math.round(((completedCredits + totalPlannedCredits) / totalDegreeCredits) * 100));
 
   // Calculate estimated weekly workload for selected plan
   const plannedCourses = BTECH_IT_COURSES.filter(c => selectedPlanCourseIds.includes(c.id));
   const weeklyWorkloadHours = plannedCourses.reduce((sum, c) => sum + (c.workloadHours || 4), 0);
   const isOverworked = weeklyWorkloadHours > (studentProfile.weeklyStudyHoursBudget || 20);
+
+  const isSemesterOverloaded = totalPlannedCredits > maxSemesterUnits;
+  const isSemesterUnderloaded = totalPlannedCredits > 0 && totalPlannedCredits < minSemesterUnits;
+
+  // SIWES Eligibility State
+  const siwesAudit = evaluateSiwesEligibility(studentProfile, programmeRules, BTECH_IT_COURSES);
+
+  // Curriculum Compliance Report
+  const complianceReport = evaluateCurriculumCompliance(
+    studentProfile, 
+    programmeRules ?? {
+      institution: 'Federal University of Technology, Minna',
+      institutionShortCode: 'FUTMinna',
+      school: 'School of Information and Communication Technology',
+      schoolShortCode: 'SICT',
+      programme: 'Information Technology',
+      programmeCode: 'B.Tech IT',
+      degreeAward: 'Bachelor of Technology (B.Tech)',
+      curriculumFramework: 'NUC Computing CCMAS / SICT Departmental Regulations',
+      minSemesterUnits: 15,
+      maxSemesterUnits: 24,
+      graduationRequirementUnits: 150,
+      directEntryGraduationUnits: 120,
+      minimumPassCGPA: 1.50,
+      allowDeanOverload: true,
+      maxOverloadUnits: 28,
+      handbookSourceNote: 'SICT B.Tech IT Handbook v2023.1',
+      isOfficialHandbookConfirmed: true,
+      isCustomConfigured: false
+    }, 
+    BTECH_IT_COURSES,
+    selectedPlanCourseIds,
+    true
+  );
 
   const toggleCollapse = () => {
     const next = !isCollapsed;
@@ -110,27 +160,92 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                {studentProfile.institution || 'School of Information Technology'} • <span className="text-indigo-600 dark:text-indigo-400 font-semibold">Semester {studentProfile.currentSemester}</span>
+                {programmeRules ? `${programmeRules.institutionShortCode} • ${programmeRules.schoolShortCode} • ${programmeRules.programme}` : (studentProfile.institution || 'School of Information Technology')} • <span className="text-indigo-600 dark:text-indigo-400 font-semibold">Semester {studentProfile.currentSemester}</span>
+                {studentProfile.entryMode && (
+                  <span className="ml-1 text-[10px] px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    {studentProfile.entryMode === 'Direct_Entry' ? 'DE (Direct Entry)' : 'UTME'}
+                  </span>
+                )}
               </p>
             </div>
           </div>
 
-          {/* Quick Collapse / Expand on Mobile & Desktop */}
+          {/* Quick Collapse / Expand & Programme Rules Action */}
           <div className="flex items-center space-x-2">
+            {onOpenProgrammeRulesModal && (
+              <button
+                onClick={onOpenProgrammeRulesModal}
+                className="p-2 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-colors flex items-center space-x-1 text-xs font-semibold"
+                title="Configure Institutional Unit Rules"
+              >
+                <Settings2 className="w-3.5 h-3.5" />
+                <span className="text-[11px] hidden md:inline">Rules</span>
+              </button>
+            )}
             <button
               onClick={toggleCollapse}
               className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors flex items-center space-x-1 text-xs font-semibold"
               title={isCollapsed ? "Expand Academic Dashboard" : "Collapse Academic Dashboard"}
             >
-              <span className="text-[11px] hidden sm:inline">{isCollapsed ? 'Expand Dashboard' : 'Compact'}</span>
+              <span className="text-[11px] hidden sm:inline">{isCollapsed ? 'Expand' : 'Compact'}</span>
               {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
         {/* Career Goal & Active Semester Selector Bar */}
-        <div className="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end overflow-hidden">
+        <div className="flex items-center space-x-2 sm:space-x-3 w-full md:w-auto justify-between md:justify-end overflow-hidden flex-wrap gap-y-2">
           
+          {/* FUTMinna / NUC Compliance Status Badge & Trigger */}
+          {onOpenCompliance && (
+            <button
+              onClick={onOpenCompliance}
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-xl border text-left shrink-0 transition-all bg-emerald-50/90 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 hover:bg-emerald-100"
+              title="FUTMinna / NUC Curriculum Compliance Audit: 8 Statutory Criteria"
+            >
+              <div className="p-1 rounded-md bg-emerald-600 text-white">
+                <ShieldCheck className="w-3 h-3" />
+              </div>
+              <div>
+                <span className="text-[9px] uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400 block leading-none">
+                  Compliance
+                </span>
+                <span className="text-xs font-bold leading-tight flex items-center gap-1">
+                  <span className="text-emerald-700 dark:text-emerald-300">✓ {complianceReport.overallPercentage}% Validated</span>
+                </span>
+              </div>
+            </button>
+          )}
+
+          {/* SIWES Statutory Status Badge & Trigger */}
+          {onOpenSiwesPortal && (
+            <button
+              onClick={onOpenSiwesPortal}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl border text-left shrink-0 transition-all ${
+                siwesAudit.isEligibleNow 
+                  ? 'bg-blue-50/90 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200 hover:bg-blue-100' 
+                  : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
+              }`}
+              title="SIWES Industrial Training Scheme: Statutory 6-Month Clearance"
+            >
+              <div className={`p-1 rounded-md ${siwesAudit.isEligibleNow ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
+                <Building2 className="w-3 h-3" />
+              </div>
+              <div>
+                <span className="text-[9px] uppercase tracking-wider font-bold text-blue-600 dark:text-blue-400 block leading-none">
+                  SIWES Status
+                </span>
+                <span className="text-xs font-bold leading-tight flex items-center gap-1">
+                  {siwesAudit.isEligibleNow ? (
+                    <span className="text-blue-700 dark:text-blue-300">Eligible (400L)</span>
+                  ) : (
+                    <span className="text-slate-500 dark:text-slate-400">{siwesAudit.statusLabel}</span>
+                  )}
+                </span>
+              </div>
+            </button>
+          )}
+
           {/* Active Target Career Badge */}
           <div className="flex items-center space-x-2 bg-indigo-50/80 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/80 px-3 py-1.5 rounded-xl shrink-0">
             <Target className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
@@ -284,7 +399,7 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-slate-600 dark:text-slate-400 flex items-center space-x-1.5">
                   <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  <span>NUC Degree Units</span>
+                  <span>Degree Units</span>
                 </span>
                 <span className="font-extrabold text-blue-600 dark:text-blue-400 text-xs">
                   {degreeProgressPercent}%
@@ -298,7 +413,7 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
               </div>
               <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 <span>{completedCredits + totalPlannedCredits} / {totalDegreeCredits} Cr</span>
-                <span className="text-slate-400">Target: 160 Cr</span>
+                <span className="text-slate-400">Target: {totalDegreeCredits} Cr</span>
               </div>
             </div>
 
@@ -310,23 +425,23 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
                   <span>Semester Credit Load</span>
                 </span>
                 <span className={`font-extrabold text-xs ${
-                  totalPlannedCredits > 24 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+                  isSemesterOverloaded ? 'text-rose-600 dark:text-rose-400' : isSemesterUnderloaded ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
                 }`}>
-                  {totalPlannedCredits} / 24.0 Cr
+                  {totalPlannedCredits} / {maxSemesterUnits}.0 Cr
                 </span>
               </div>
               <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                 <div 
                   className={`h-full rounded-full transition-all duration-500 ${
-                    totalPlannedCredits > 24 ? 'bg-rose-500' : 'bg-emerald-500'
+                    isSemesterOverloaded ? 'bg-rose-500' : isSemesterUnderloaded ? 'bg-amber-500' : 'bg-emerald-500'
                   }`}
-                  style={{ width: `${Math.min(100, (totalPlannedCredits / 24) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (totalPlannedCredits / maxSemesterUnits) * 100)}%` }}
                 ></div>
               </div>
               <div className="flex items-center justify-between text-[11px] font-medium">
-                <span className="text-slate-500 dark:text-slate-400">Max Safe Limit: 24 Cr</span>
-                <span className={totalPlannedCredits > 24 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'}>
-                  {totalPlannedCredits > 24 ? 'Exceeds Limit' : 'Safe Load'}
+                <span className="text-slate-500 dark:text-slate-400">Allowed: {minSemesterUnits}–{maxSemesterUnits} Cr</span>
+                <span className={isSemesterOverloaded ? 'text-rose-600 font-bold' : isSemesterUnderloaded ? 'text-amber-600 font-bold' : 'text-emerald-600 font-bold'}>
+                  {isSemesterOverloaded ? 'Exceeds Limit' : isSemesterUnderloaded ? 'Underload' : 'Safe Load'}
                 </span>
               </div>
             </div>

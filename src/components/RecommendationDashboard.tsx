@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { RecommendedCourseResult, StudentProfile, Course } from '../types/curriculum';
-import { CAREER_TRACKS } from '../data/btechItCurriculum';
+import { RecommendedCourseResult, StudentProfile, Course, RequirementClassification, AcademicProgrammeRules } from '../types/curriculum';
+import { CAREER_TRACKS, BTECH_IT_COURSES } from '../data/btechItCurriculum';
+import { calculateCurriculumDualAudit } from '../services/recommendationEngine';
+import { ComplianceSummaryCard } from './ComplianceSummaryCard';
 import { 
   Sparkles, 
   CheckCircle2, 
@@ -22,17 +24,27 @@ import {
   Compass, 
   Lightbulb,
   Info,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Building2,
+  Briefcase,
+  Scale,
+  Award,
+  Zap,
+  Target,
+  ArrowRight
 } from 'lucide-react';
 import { SemanticVectorModal } from './SemanticVectorModal';
 
 interface RecommendationDashboardProps {
   recommendations: RecommendedCourseResult[];
   studentProfile: StudentProfile;
+  programmeRules?: AcademicProgrammeRules;
   selectedPlanCourseIds: string[];
   onTogglePlanCourse: (courseId: string) => void;
   onOpenSyllabusModal: (course: Course) => void;
   onOpenCounselor: () => void;
+  onOpenCompliance?: () => void;
+  onOpenSiwesPortal?: () => void;
   recommendationMode?: 'semantic-embeddings' | 'legacy-tfidf';
   onToggleRecommendationMode?: () => void;
 }
@@ -40,20 +52,24 @@ interface RecommendationDashboardProps {
 export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = ({
   recommendations,
   studentProfile,
+  programmeRules,
   selectedPlanCourseIds,
   onTogglePlanCourse,
   onOpenSyllabusModal,
   onOpenCounselor,
+  onOpenCompliance,
+  onOpenSiwesPortal,
   recommendationMode = 'semantic-embeddings',
   onToggleRecommendationMode
 }) => {
   const [selectedDomain, setSelectedDomain] = useState<string>('All');
   const [prereqOnlyFilter, setPrereqOnlyFilter] = useState<boolean>(false);
   const [minMatchFilter, setMinMatchFilter] = useState<number>(0);
-  const [activeSectionTab, setActiveSectionTab] = useState<'ALL' | 'CAREER_ELECTIVES' | 'CORE_COURSES' | 'OPEN_ELECTIVES'>('ALL');
+  const [activeSectionTab, setActiveSectionTab] = useState<'ALL' | 'UNIVERSITY_MANDATORY' | 'CAREER_ELECTIVES' | 'DUAL_VALUE' | 'OPEN_ELECTIVES'>('ALL');
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+    'university-mandate': false,
     'career-electives': false,
-    'core-courses': false,
+    'dual-value': false,
     'open-electives': false
   });
   const [showFirstTimeGuide, setShowFirstTimeGuide] = useState<boolean>(true);
@@ -77,22 +93,26 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
 
   const targetTrack = CAREER_TRACKS.find(t => t.id === studentProfile.targetCareerTrackId) || CAREER_TRACKS[0];
 
+  // Calculate Dual-Lens Audit
+  const dualAudit = calculateCurriculumDualAudit(studentProfile, selectedPlanCourseIds);
+
   const filteredRecommendations = recommendations.filter(item => {
     if (selectedDomain !== 'All' && item.course.domain !== selectedDomain) return false;
     if (prereqOnlyFilter && !item.prerequisitesMet) return false;
     if (item.matchScore < minMatchFilter) return false;
+    if (activeSectionTab === 'UNIVERSITY_MANDATORY' && !item.isUniversityMandatory) return false;
+    if (activeSectionTab === 'CAREER_ELECTIVES' && (item.course.type !== 'Elective' || item.classification === 'UNIVERSITY_MANDATORY')) return false;
+    if (activeSectionTab === 'DUAL_VALUE' && item.classification !== 'DUAL_VALUE') return false;
+    if (activeSectionTab === 'OPEN_ELECTIVES' && (item.course.type !== 'Elective' || targetTrack.recommendedElectiveIds.includes(item.course.id) || item.matchScore >= 70)) return false;
     return true;
   });
 
-  // Categorize courses into distinct, digestible packages
+  // Categorize courses into distinct packages
+  const universityMandatoryCourses = filteredRecommendations.filter(r => r.isUniversityMandatory);
   const careerElectives = filteredRecommendations.filter(r => 
     r.course.type === 'Elective' && (targetTrack.recommendedElectiveIds.includes(r.course.id) || r.matchScore >= 70)
   );
-
-  const coreCourses = filteredRecommendations.filter(r => 
-    r.course.type === 'Core' || r.course.type === 'Lab'
-  );
-
+  const dualValueCourses = filteredRecommendations.filter(r => r.classification === 'DUAL_VALUE');
   const openElectives = filteredRecommendations.filter(r => 
     r.course.type === 'Elective' && !targetTrack.recommendedElectiveIds.includes(r.course.id) && r.matchScore < 70
   );
@@ -104,8 +124,8 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
     setIsSemanticModalOpen(true);
   };
 
-  // Reusable Single Course Card Component
-  const renderCourseCard = (item: RecommendedCourseResult, index: number, badgeLabel?: string, badgeColor?: string) => {
+  // Reusable Single Course Card Component with Dual-Lens Highlighting
+  const renderCourseCard = (item: RecommendedCourseResult, index: number) => {
     const course = item.course;
     const inPlanner = selectedPlanCourseIds.includes(course.id);
     const semanticScore = item.breakdown.semanticEmbeddingScore || item.matchScore;
@@ -120,8 +140,8 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
             : 'border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
         }`}
       >
-        {/* Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
+        {/* Top Tag Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-3.5">
           <div className="flex items-start space-x-3.5">
             <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-xs text-slate-600 dark:text-slate-300 flex-shrink-0 mt-0.5">
               #{index + 1}
@@ -129,28 +149,34 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
 
             <div>
               <div className="flex items-center space-x-2 flex-wrap gap-y-1.5">
-                {/* Status Tags */}
-                {item.prerequisitesMet ? (
-                  <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                    Ready to Take
+                
+                {/* DUAL-LENS PRIMARY CLASSIFICATION BADGE */}
+                {item.classification === 'DUAL_VALUE' ? (
+                  <span className="text-[10px] text-indigo-700 dark:text-indigo-300 font-extrabold uppercase bg-indigo-50 dark:bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800 flex items-center gap-1 shadow-2xs">
+                    <Scale className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
+                    <span>Dual-Value: University Core + High Career Fit</span>
+                  </span>
+                ) : item.isUniversityMandatory ? (
+                  <span className="text-[10px] text-purple-700 dark:text-purple-300 font-extrabold uppercase bg-purple-50 dark:bg-purple-950/80 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800 flex items-center gap-1 shadow-2xs">
+                    <Building2 className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                    <span>University Requirement: Mandatory Core</span>
                   </span>
                 ) : (
-                  <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-                    Need Prerequisites First
+                  <span className="text-[10px] text-cyan-800 dark:text-cyan-300 font-extrabold uppercase bg-cyan-50 dark:bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-200 dark:border-cyan-800 flex items-center gap-1 shadow-2xs">
+                    <Briefcase className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
+                    <span>Industry Recommendation: Career Elective</span>
                   </span>
                 )}
 
-                {badgeLabel ? (
-                  <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border ${badgeColor}`}>
-                    {badgeLabel}
-                  </span>
-                ) : course.type === 'Core' ? (
-                  <span className="text-[10px] text-purple-700 dark:text-purple-300 font-bold uppercase bg-purple-50 dark:bg-purple-950/60 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
-                    Required Core
+                {/* Status Tags */}
+                {item.prerequisitesMet ? (
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold uppercase bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                    Ready to Enroll
                   </span>
                 ) : (
-                  <span className="text-[10px] text-blue-700 dark:text-blue-300 font-bold uppercase bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
-                    Career Elective
+                  <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    Prerequisites Needed
                   </span>
                 )}
 
@@ -162,13 +188,18 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                     NUC: {course.nucCcmasCode}
                   </span>
                 )}
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">{course.name}</h3>
               </div>
 
-              <div className="flex items-center space-x-2 sm:space-x-3 text-xs text-slate-500 dark:text-slate-400 mt-1.5 flex-wrap gap-y-0.5 font-medium">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mt-1">{course.name}</h3>
+
+              <div className="flex items-center space-x-2 sm:space-x-3 text-xs text-slate-500 dark:text-slate-400 mt-1 flex-wrap gap-y-1 font-medium">
                 <span>Sem {course.semester} ({course.academicLevel || 'Level'})</span>
                 <span>•</span>
-                <span>{course.credits} Units</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{course.credits} Units</span>
+                <span>•</span>
+                <span className="text-slate-700 dark:text-slate-300 font-mono text-[11px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                  LH: {course.lectureHours ?? 2}h {course.practicalHours && course.practicalHours > 0 ? `• PH: ${course.practicalHours}h (Lab)` : '• PH: 0h'}
+                </span>
                 <span>•</span>
                 <span className="text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded text-[10px]">
                   {course.acmKnowledgeArea || (course.ieeeAcmStandard || 'IEEE/ACM')}
@@ -181,8 +212,8 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
             </div>
           </div>
 
-          {/* Right Score & Action Button */}
-          <div className="flex items-center space-x-4 self-end sm:self-auto pt-2 sm:pt-0">
+          {/* Right Match Score & Action Button */}
+          <div className="flex items-center space-x-4 self-end sm:self-start pt-1 sm:pt-0">
             <div className="text-right">
               <div className={`text-xl sm:text-2xl font-extrabold ${
                 item.matchScore >= 80 ? 'text-blue-600 dark:text-blue-400' : item.matchScore >= 60 ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-600 dark:text-amber-400'
@@ -219,12 +250,70 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
         </div>
 
         {/* Course Description */}
-        <p className="text-xs text-slate-600 dark:text-slate-300 my-3 leading-relaxed">
+        <p className="text-xs text-slate-600 dark:text-slate-300 my-2.5 leading-relaxed">
           {course.description}
         </p>
 
+        {/* ========================================================================= */}
+        {/* DUAL-LENS EXPLICIT DISTINCTION CARD (University Requires vs Industry Recommends) */}
+        {/* ========================================================================= */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 my-3 p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/70 dark:from-slate-800/80 dark:to-slate-800/40 border border-slate-200/90 dark:border-slate-700/80 text-xs">
+          
+          {/* LENS 1: What the University Requires */}
+          <div className="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-purple-100 dark:border-purple-900/40 shadow-2xs space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-[11px] text-purple-700 dark:text-purple-300 flex items-center gap-1.5 uppercase tracking-wide">
+                <Building2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                <span>What the University Requires</span>
+              </span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                item.isUniversityMandatory
+                  ? 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+              }`}>
+                {item.isUniversityMandatory ? 'Mandatory Degree Core' : 'Accredited Elective Pool'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-normal">
+              {item.universityRequirementSummary}
+            </p>
+            <div className="pt-1 flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 flex-wrap">
+              <span className="font-semibold text-purple-700 dark:text-purple-400">Authority:</span> NUC CCMAS / FUT Minna Senate
+              <span>•</span>
+              <span>{course.credits} Statutory Units</span>
+            </div>
+          </div>
+
+          {/* LENS 2: What the Industry / Career Pathway Recommends */}
+          <div className="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-cyan-100 dark:border-cyan-900/40 shadow-2xs space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-[11px] text-cyan-800 dark:text-cyan-300 flex items-center gap-1.5 uppercase tracking-wide">
+                <Briefcase className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                <span>What Industry Recommends</span>
+              </span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                item.isCareerRecommended
+                  ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-900 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+              }`}>
+                {item.isCareerRecommended ? `High Fit for ${targetTrack.title}` : 'General Domain'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-normal">
+              {item.industryRecommendationSummary}
+            </p>
+            <div className="pt-1 flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 flex-wrap">
+              <span className="font-semibold text-cyan-700 dark:text-cyan-400">Skills Gained:</span>
+              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                {course.skillsAcquired.slice(0, 3).join(', ')}
+              </span>
+            </div>
+          </div>
+
+        </div>
+
         {/* Score Breakdown Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 my-3.5 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 text-[11px]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 my-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 text-[11px]">
           <div>
             <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1 font-medium">
               <span>Prerequisites</span>
@@ -238,7 +327,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
           <div>
             <div className="flex justify-between text-slate-600 dark:text-slate-300 mb-1 font-medium">
               <span>Career Fit</span>
-              <span className="text-blue-600 dark:text-blue-400 font-bold">{semanticScore}%</span>
+              <span className="text-cyan-600 dark:text-cyan-400 font-bold">{semanticScore}%</span>
             </div>
             <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <div className="h-full bg-cyan-600 rounded-full" style={{ width: `${semanticScore}%` }}></div>
@@ -312,106 +401,163 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
   return (
     <div className="space-y-6 sm:space-y-8">
       
-      {/* Hero & Standards Telemetry Bar */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* ========================================================================= */}
+      {/* DUAL-LENS MASTER COMPARATIVE MATRIX HERO (University vs Industry Pathways) */}
+      {/* ========================================================================= */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs transition-colors space-y-6">
         
-        {/* Main Recommendation Hero Box */}
-        <div className="lg:col-span-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 text-white rounded-2xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden shadow-md shadow-indigo-100">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
           <div>
-            <div className="flex flex-wrap items-center gap-2 mb-3.5">
-              <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-100 bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-full">
-                <Sparkles className="w-3.5 h-3.5 text-blue-200" />
-                <span>Organized Course Packages</span>
-              </div>
-
-              <div className="inline-flex items-center space-x-1.5 text-[11px] font-bold uppercase tracking-wider text-cyan-200 bg-cyan-950/40 border border-cyan-400/30 px-3 py-1.5 rounded-full">
-                <Binary className="w-3 h-3 text-cyan-300" />
-                <span>AI Skill Matching</span>
-              </div>
+            <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 px-3.5 py-1.5 rounded-full mb-2">
+              <Scale className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span>Dual-Lens Curriculum Intelligence Engine</span>
             </div>
-
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-snug">
-              Course Guide for <span className="text-cyan-300 font-extrabold bg-white/10 px-3 py-1 rounded-lg border border-cyan-300/30 inline-block my-1">{targetTrack.title}</span>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Academic Degree Requirements <span className="text-slate-400 font-medium">vs.</span> Career Pathway Recommendations
             </h2>
-            <p className="text-sm text-indigo-100 mt-3 max-w-2xl leading-relaxed">
-              We have categorized your Semester {studentProfile.currentSemester} subjects into clear sections below: <strong className="text-white">Required Core Courses</strong> (mandatory for all students) and <strong className="text-cyan-200">Recommended Career Electives</strong> (chosen to build skills for your target role).
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-3xl leading-relaxed">
+              The system actively distinguishes what the <strong className="text-purple-700 dark:text-purple-300">University Requires</strong> (statutory NUC CCMAS & FUT Minna graduation mandates) from what your target <strong className="text-cyan-700 dark:text-cyan-300">Industry Pathway Recommends</strong> (high-demand skill electives for {targetTrack.title}).
             </p>
           </div>
 
-          <div className="mt-7 pt-5 border-t border-white/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-            <div className="flex items-center space-x-6 sm:space-x-8">
-              <div>
-                <span className="text-[10px] text-indigo-200 uppercase tracking-wider font-semibold block mb-0.5">Ready to Take</span>
-                <span className="text-lg font-extrabold text-white">{recommendations.filter(r => r.prerequisitesMet).length} of {recommendations.length}</span>
-              </div>
-              <div className="h-8 w-px bg-white/20"></div>
-              <div>
-                <span className="text-[10px] text-indigo-200 uppercase tracking-wider font-semibold block mb-0.5">Career Electives</span>
-                <span className="text-lg font-extrabold text-cyan-200">{careerElectives.length} Available</span>
-              </div>
-              <div className="h-8 w-px bg-white/20"></div>
-              <div>
-                <span className="text-[10px] text-indigo-200 uppercase tracking-wider font-semibold block mb-0.5">Core Courses</span>
-                <span className="text-lg font-extrabold text-white">{coreCourses.length} Subjects</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleOpenVectorInspector()}
-                className="text-xs font-bold text-white bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5"
-                title="See how AI compares course topics to your career goals"
-              >
-                <Cpu className="w-3.5 h-3.5 text-cyan-300" />
-                <span>AI Matching Logic</span>
-              </button>
-
-              <button
-                onClick={onOpenCounselor}
-                className="text-xs font-bold text-slate-900 bg-white hover:bg-blue-50 px-4 py-2 rounded-xl transition-all self-start sm:self-auto shadow-xs"
-              >
-                Ask AI Advisor →
-              </button>
-            </div>
+          <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+            <button
+              onClick={() => handleOpenVectorInspector()}
+              className="text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-3.5 py-2 rounded-xl transition-all flex items-center space-x-1.5 border border-slate-200 dark:border-slate-700"
+            >
+              <Binary className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              <span>AI Vector Match</span>
+            </button>
+            <button
+              onClick={onOpenCounselor}
+              className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl transition-all shadow-xs"
+            >
+              Consult AI Advisor →
+            </button>
           </div>
         </div>
 
-        {/* Standard Compliance Sidebar Panel */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-7 flex flex-col justify-between space-y-5 shadow-xs transition-colors">
-          <div className="space-y-4">
-            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
-              Degree & Standard Check
-            </h3>
-            
-            <div className="space-y-4 text-xs">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-slate-600 dark:text-slate-400 font-semibold">Career Skill Match</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">96.8%</span>
+        {/* Side-by-Side Comparative Audit Matrix */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          
+          {/* COLUMN 1: What the University Requires */}
+          <div className="bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/80 dark:border-purple-900/50 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-xs">
+                  <Building2 className="w-5 h-5" />
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full w-[96%] rounded-full"></div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 block leading-tight">Lens 1: Academic Mandate</span>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">What the University Requires</h3>
                 </div>
               </div>
+              <span className="text-xs font-extrabold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/60 px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-800">
+                {dualAudit.universityAudit.compliancePercent}% Compliant
+              </span>
+            </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-slate-600 dark:text-slate-400 font-semibold">Curriculum Standards</span>
-                  <span className="text-blue-600 dark:text-blue-400 font-bold">94.2%</span>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                  <div className="bg-blue-600 h-full w-[94%] rounded-full"></div>
-                </div>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>Prescribed Authority:</span>
+                <span className="font-semibold text-slate-900 dark:text-white text-right">NUC CCMAS & FUT Minna Senate</span>
               </div>
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>Mandatory Core Units:</span>
+                <span className="font-semibold text-purple-700 dark:text-purple-300">
+                  {dualAudit.universityAudit.completedCoreUnits + dualAudit.universityAudit.plannedCoreUnits} / {dualAudit.universityAudit.totalCoreUnits} Units
+                </span>
+              </div>
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>SIWES & Capstone Project:</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {dualAudit.universityAudit.isSiwesCompleted ? 'SIWES Cleared' : 'Semester 8 SIWES (Mandatory)'}
+                </span>
+              </div>
+            </div>
+
+            <div className="w-full bg-purple-200 dark:bg-purple-900/60 h-2 rounded-full overflow-hidden">
+              <div 
+                className="bg-purple-600 h-full rounded-full transition-all duration-500"
+                style={{ width: `${dualAudit.universityAudit.compliancePercent}%` }}
+              ></div>
+            </div>
+
+            <div className="pt-2 border-t border-purple-200/60 dark:border-purple-900/40 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+              <span>Goal: B.Tech Degree Conferment</span>
+              <button
+                onClick={() => setActiveSectionTab('UNIVERSITY_MANDATORY')}
+                className="font-bold text-purple-700 dark:text-purple-300 hover:underline flex items-center gap-1"
+              >
+                Filter Core Courses ({universityMandatoryCourses.length}) →
+              </button>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>Credit Limit: 24.0 Max</span>
-            <span className="text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-md font-bold text-[11px]">In Safe Limit</span>
+          {/* COLUMN 2: What the Industry / Career Pathway Recommends */}
+          <div className="bg-cyan-50/50 dark:bg-cyan-950/20 border border-cyan-200/80 dark:border-cyan-900/50 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-cyan-600 text-white flex items-center justify-center font-bold shadow-xs">
+                  <Briefcase className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300 block leading-tight">Lens 2: Industry Alignment</span>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">What Industry Recommends</h3>
+                </div>
+              </div>
+              <span className="text-xs font-extrabold text-cyan-800 dark:text-cyan-300 bg-cyan-100 dark:bg-cyan-900/60 px-2.5 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800">
+                {dualAudit.industryAudit.readinessIndex}% Ready
+              </span>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>Target Career Track:</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{targetTrack.title}</span>
+              </div>
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>Key Skills Mastered:</span>
+                <span className="font-semibold text-cyan-800 dark:text-cyan-300">
+                  {dualAudit.industryAudit.skillsAcquiredCount} of {dualAudit.industryAudit.totalSkillsCount} Skills
+                </span>
+              </div>
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>Market Demand / Salary:</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {targetTrack.industryDemand} Demand ({targetTrack.averageSalaryUSD})
+                </span>
+              </div>
+            </div>
+
+            <div className="w-full bg-cyan-200 dark:bg-cyan-900/60 h-2 rounded-full overflow-hidden">
+              <div 
+                className="bg-cyan-600 h-full rounded-full transition-all duration-500"
+                style={{ width: `${dualAudit.industryAudit.readinessIndex}%` }}
+              ></div>
+            </div>
+
+            <div className="pt-2 border-t border-cyan-200/60 dark:border-cyan-900/40 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+              <span>Goal: Job Placement & High-Earning Competency</span>
+              <button
+                onClick={() => setActiveSectionTab('CAREER_ELECTIVES')}
+                className="font-bold text-cyan-800 dark:text-cyan-300 hover:underline flex items-center gap-1"
+              >
+                Filter Track Electives ({careerElectives.length}) →
+              </button>
+            </div>
           </div>
+
         </div>
+
+        {/* FUTMinna / NUC Statutory Curriculum Compliance Card (8-Dimension Accreditation Audit) */}
+        <ComplianceSummaryCard
+          studentProfile={studentProfile}
+          programmeRules={programmeRules}
+          allCourses={BTECH_IT_COURSES}
+          plannedCourseIds={selectedPlanCourseIds}
+          onOpenDetailedAudit={onOpenCompliance}
+        />
 
       </div>
 
@@ -425,27 +571,35 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
               </div>
               <div className="space-y-1.5 text-xs">
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
-                  <span>How Course Selection Works in B.Tech IT</span>
-                  <span className="text-[10px] uppercase font-extrabold bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded">First-Time Guide</span>
+                  <span>How to Navigate Dual-Lens Course Selection</span>
+                  <span className="text-[10px] uppercase font-extrabold bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 px-2 py-0.5 rounded">Advisory Guide</span>
                 </h4>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed max-w-3xl">
-                  To keep things simple, subjects are organized into two primary categories:
+                  Every semester in B.Tech IT balances statutory compliance with career readiness:
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-blue-100 dark:border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-purple-100 dark:border-purple-900/50">
                     <span className="font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5 mb-1">
-                      <GraduationCap className="w-4 h-4" /> 📘 Required Core Courses
+                      <Building2 className="w-4 h-4" /> 🏛️ University Requirements
                     </span>
                     <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-normal">
-                      Mandatory foundation subjects that every B.Tech IT student must complete. You should enroll in all core courses for your semester.
+                      Mandatory foundation courses required for Senate clearance and degree certification. You must enroll in all active core courses.
                     </p>
                   </div>
-                  <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-blue-100 dark:border-slate-800">
-                    <span className="font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5 mb-1">
-                      <Compass className="w-4 h-4" /> 🎯 Career Elective Choices
+                  <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-cyan-100 dark:border-cyan-900/50">
+                    <span className="font-bold text-cyan-800 dark:text-cyan-300 flex items-center gap-1.5 mb-1">
+                      <Briefcase className="w-4 h-4" /> 🚀 Industry Recommendations
                     </span>
                     <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-normal">
-                      Specialization subjects aligned to your career track ({targetTrack.title}). Pick <strong className="text-slate-800 dark:text-slate-200">1 to 2 electives</strong> to reach ~20–22 total semester credits.
+                      High-impact electives recommended by industry standards for your specialization ({targetTrack.title}). Pick 1–2 per semester.
+                    </p>
+                  </div>
+                  <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+                    <span className="font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5 mb-1">
+                      <Scale className="w-4 h-4" /> ⚖️ Dual-Value Hybrid
+                    </span>
+                    <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-normal">
+                      Core courses that double as top industry skill builders (e.g. Data Structures, Database Systems, Computer Networks). Highest priority!
                     </p>
                   </div>
                 </div>
@@ -462,7 +616,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
         </div>
       )}
 
-      {/* Package Navigation Segmented Tabs */}
+      {/* Package Navigation Segmented Tabs (Categorized by Dual-Lens Types) */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-2 sm:p-2.5 rounded-2xl flex items-center gap-2 overflow-x-auto shadow-xs transition-colors">
         <button
           onClick={() => setActiveSectionTab('ALL')}
@@ -473,31 +627,43 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>All Packaged Sections ({filteredRecommendations.length})</span>
+          <span>All Course Offerings ({filteredRecommendations.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSectionTab('UNIVERSITY_MANDATORY')}
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeSectionTab === 'UNIVERSITY_MANDATORY'
+              ? 'bg-purple-600 text-white shadow-xs'
+              : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40'
+          }`}
+        >
+          <Building2 className="w-3.5 h-3.5" />
+          <span>🏛️ University Requirements ({universityMandatoryCourses.length})</span>
         </button>
 
         <button
           onClick={() => setActiveSectionTab('CAREER_ELECTIVES')}
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             activeSectionTab === 'CAREER_ELECTIVES'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-cyan-600 text-white shadow-xs'
+              : 'text-cyan-800 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-950/40'
           }`}
         >
-          <Compass className="w-3.5 h-3.5" />
-          <span>🎯 Career Electives ({careerElectives.length})</span>
+          <Briefcase className="w-3.5 h-3.5" />
+          <span>🚀 Industry Recommendations ({careerElectives.length})</span>
         </button>
 
         <button
-          onClick={() => setActiveSectionTab('CORE_COURSES')}
+          onClick={() => setActiveSectionTab('DUAL_VALUE')}
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            activeSectionTab === 'CORE_COURSES'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            activeSectionTab === 'DUAL_VALUE'
+              ? 'bg-indigo-600 text-white shadow-xs'
+              : 'text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40'
           }`}
         >
-          <GraduationCap className="w-3.5 h-3.5" />
-          <span>📘 Required Core ({coreCourses.length})</span>
+          <Scale className="w-3.5 h-3.5" />
+          <span>⚖️ Dual-Value ({dualValueCourses.length})</span>
         </button>
 
         {openElectives.length > 0 && (
@@ -505,7 +671,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
             onClick={() => setActiveSectionTab('OPEN_ELECTIVES')}
             className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
               activeSectionTab === 'OPEN_ELECTIVES'
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-slate-700 text-white shadow-xs'
                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
@@ -589,7 +755,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
               onChange={e => setPrereqOnlyFilter(e.target.checked)}
               className="accent-blue-600 rounded border-slate-300 dark:border-slate-700 w-4 h-4"
             />
-            <span>Ready to Take</span>
+            <span>Ready to Enroll</span>
           </label>
 
           <div className="flex items-center space-x-2">
@@ -615,10 +781,10 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
           <HelpCircle className="w-12 h-12 text-slate-400 mx-auto mb-3" />
           <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-2">No courses matched your current filter criteria</h3>
           <p className="text-xs max-w-md mx-auto mb-5 text-slate-500 dark:text-slate-400 leading-relaxed">
-            Try adjusting the subject area filter or lowering the minimum match percentage.
+            Try adjusting the subject area filter, resetting the dual-lens tab, or lowering the minimum match percentage.
           </p>
           <button
-            onClick={() => { setSelectedDomain('All'); setPrereqOnlyFilter(false); setMinMatchFilter(0); }}
+            onClick={() => { setSelectedDomain('All'); setPrereqOnlyFilter(false); setMinMatchFilter(0); setActiveSectionTab('ALL'); }}
             className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 rounded-xl transition-colors"
           >
             Reset Filters
@@ -627,31 +793,84 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
       ) : (
         <div className="space-y-8">
           
-          {/* SECTION 1: RECOMMENDED CAREER ELECTIVES */}
-          {(activeSectionTab === 'ALL' || activeSectionTab === 'CAREER_ELECTIVES') && (
+          {/* SECTION 1: WHAT THE UNIVERSITY REQUIRES (MANDATORY CORE) */}
+          {(activeSectionTab === 'ALL' || activeSectionTab === 'UNIVERSITY_MANDATORY') && (
             <div className="space-y-4">
               
               {/* Section Header Card */}
-              <div className="bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/30 border border-blue-200/80 dark:border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+              <div className="bg-gradient-to-r from-purple-50/90 via-white to-pink-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-purple-950/30 border border-purple-200/80 dark:border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs font-bold shrink-0">
-                    <Compass className="w-5 h-5 text-cyan-200" />
+                  <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-xs font-bold shrink-0">
+                    <Building2 className="w-5 h-5 text-purple-200" />
                   </div>
                   <div>
                     <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Recommended Career Electives</h3>
-                      <span className="text-[10px] font-bold uppercase bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
-                        {targetTrack.title}
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">What the University Requires</h3>
+                      <span className="text-[10px] font-bold uppercase bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-300 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
+                        NUC CCMAS & FUT Minna Mandates
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Curated subjects tailored to build your industry competency. Choose <strong className="text-slate-700 dark:text-slate-300">1 to 2 electives</strong> for your semester schedule.
+                      Statutory core units required for academic matriculation, prerequisite progression, and final graduation clearance.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-3 self-end sm:self-auto shrink-0">
-                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-900">
+                  <span className="text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-3 py-1.5 rounded-xl border border-purple-100 dark:border-purple-900">
+                    {universityMandatoryCourses.length} Mandated Subject{universityMandatoryCourses.length === 1 ? '' : 's'}
+                  </span>
+                  <button
+                    onClick={() => toggleSectionCollapse('university-mandate')}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    title={collapsedSections['university-mandate'] ? 'Expand section' : 'Collapse section'}
+                  >
+                    {collapsedSections['university-mandate'] ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Cards Container */}
+              {!collapsedSections['university-mandate'] && (
+                <div className="space-y-4">
+                  {universityMandatoryCourses.length === 0 ? (
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 text-center text-slate-500 dark:text-slate-400 text-xs">
+                      No mandatory university core courses matched the current filter.
+                    </div>
+                  ) : (
+                    universityMandatoryCourses.map((item, idx) => renderCourseCard(item, idx))
+                  )}
+                </div>
+              )}
+
+            </div>
+          )}
+
+          {/* SECTION 2: WHAT THE INDUSTRY / CAREER PATHWAY RECOMMENDS */}
+          {(activeSectionTab === 'ALL' || activeSectionTab === 'CAREER_ELECTIVES') && (
+            <div className="space-y-4">
+              
+              {/* Section Header Card */}
+              <div className="bg-gradient-to-r from-cyan-50/90 via-white to-blue-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-cyan-950/30 border border-cyan-200/80 dark:border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-600 text-white flex items-center justify-center shadow-xs font-bold shrink-0">
+                    <Briefcase className="w-5 h-5 text-cyan-100" />
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">What Industry / Career Recommends</h3>
+                      <span className="text-[10px] font-bold uppercase bg-cyan-100 dark:bg-cyan-900/60 text-cyan-900 dark:text-cyan-300 px-2.5 py-0.5 rounded-full border border-cyan-200 dark:border-cyan-800">
+                        {targetTrack.title}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Curated specialized electives recommended to build in-demand industry skills for {targetTrack.targetRole} roles. Choose 1 to 2 electives.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 self-end sm:self-auto shrink-0">
+                  <span className="text-xs font-semibold text-cyan-800 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/60 px-3 py-1.5 rounded-xl border border-cyan-100 dark:border-cyan-900">
                     {careerElectives.length} Elective{careerElectives.length === 1 ? '' : 's'}
                   </span>
                   <button
@@ -672,9 +891,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
                       No career electives matched the current filter.
                     </div>
                   ) : (
-                    careerElectives.map((item, idx) => 
-                      renderCourseCard(item, idx, 'Career Elective', 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800')
-                    )
+                    careerElectives.map((item, idx) => renderCourseCard(item, idx))
                   )}
                 </div>
               )}
@@ -682,62 +899,54 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
             </div>
           )}
 
-          {/* SECTION 2: REQUIRED CORE COURSES */}
-          {(activeSectionTab === 'ALL' || activeSectionTab === 'CORE_COURSES') && (
+          {/* SECTION 3: DUAL-VALUE PRIORITY HYBRIDS */}
+          {dualValueCourses.length > 0 && (activeSectionTab === 'ALL' || activeSectionTab === 'DUAL_VALUE') && (
             <div className="space-y-4">
               
               {/* Section Header Card */}
-              <div className="bg-gradient-to-r from-purple-50/80 via-white to-pink-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-purple-950/30 border border-purple-200/80 dark:border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+              <div className="bg-gradient-to-r from-indigo-50/90 via-white to-purple-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/30 border border-indigo-200/80 dark:border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-xs font-bold shrink-0">
-                    <GraduationCap className="w-5 h-5 text-purple-200" />
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs font-bold shrink-0">
+                    <Scale className="w-5 h-5 text-indigo-100" />
                   </div>
                   <div>
                     <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Required Core Courses</h3>
-                      <span className="text-[10px] font-bold uppercase bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-300 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
-                        Semester {studentProfile.currentSemester} Mandatory
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">Dual-Value Hybrid Courses</h3>
+                      <span className="text-[10px] font-bold uppercase bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                        Maximum ROI
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Foundational computing, algorithms, and systems courses required for AICTE B.Tech IT degree compliance.
+                      These compulsory core subjects simultaneously satisfy mandatory degree credits while delivering top-tier skills for your chosen career track.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-3 self-end sm:self-auto shrink-0">
-                  <span className="text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-3 py-1.5 rounded-xl border border-purple-100 dark:border-purple-900">
-                    {coreCourses.length} Core Course{coreCourses.length === 1 ? '' : 's'}
+                  <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1.5 rounded-xl border border-indigo-100 dark:border-indigo-900">
+                    {dualValueCourses.length} High-Yield Course{dualValueCourses.length === 1 ? '' : 's'}
                   </span>
                   <button
-                    onClick={() => toggleSectionCollapse('core-courses')}
+                    onClick={() => toggleSectionCollapse('dual-value')}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    title={collapsedSections['core-courses'] ? 'Expand section' : 'Collapse section'}
+                    title={collapsedSections['dual-value'] ? 'Expand section' : 'Collapse section'}
                   >
-                    {collapsedSections['core-courses'] ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                    {collapsedSections['dual-value'] ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
               {/* Cards Container */}
-              {!collapsedSections['core-courses'] && (
+              {!collapsedSections['dual-value'] && (
                 <div className="space-y-4">
-                  {coreCourses.length === 0 ? (
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 text-center text-slate-500 dark:text-slate-400 text-xs">
-                      No core courses matched the current filter.
-                    </div>
-                  ) : (
-                    coreCourses.map((item, idx) => 
-                      renderCourseCard(item, idx, 'Required Core', 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 border-purple-200 dark:border-purple-800')
-                    )
-                  )}
+                  {dualValueCourses.map((item, idx) => renderCourseCard(item, idx))}
                 </div>
               )}
 
             </div>
           )}
 
-          {/* SECTION 3: OPEN & INTERDISCIPLINARY ELECTIVES */}
+          {/* SECTION 4: OPEN & INTERDISCIPLINARY ELECTIVES */}
           {openElectives.length > 0 && (activeSectionTab === 'ALL' || activeSectionTab === 'OPEN_ELECTIVES') && (
             <div className="space-y-4">
               
@@ -777,9 +986,7 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
               {/* Cards Container */}
               {!collapsedSections['open-electives'] && (
                 <div className="space-y-4">
-                  {openElectives.map((item, idx) => 
-                    renderCourseCard(item, idx, 'Open Elective', 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800')
-                  )}
+                  {openElectives.map((item, idx) => renderCourseCard(item, idx))}
                 </div>
               )}
 
@@ -802,4 +1009,5 @@ export const RecommendationDashboard: React.FC<RecommendationDashboardProps> = (
     </div>
   );
 };
+
 

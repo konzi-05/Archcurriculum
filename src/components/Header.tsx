@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User } from 'firebase/auth';
+import { AcademicProgrammeRules } from '../types/curriculum';
 import { 
   Sparkles, 
   MessageSquare, 
@@ -16,17 +17,24 @@ import {
   Layers,
   CheckCircle2,
   ExternalLink,
-  Bot
+  Bot,
+  GraduationCap,
+  Building2,
+  ShieldCheck
 } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: 'recommendations' | 'curriculum' | 'career' | 'planner';
   setActiveTab: (tab: 'recommendations' | 'curriculum' | 'career' | 'planner') => void;
+  programmeRules?: AcademicProgrammeRules;
+  onOpenProgrammeRules?: () => void;
   onOpenProfile: () => void;
   onOpenCounselor: () => void;
   onOpenWalkthrough: () => void;
   onOpenAuth: () => void;
   onOpenDatabaseExport?: () => void;
+  onOpenSiwesPortal?: () => void;
+  onOpenCompliance?: () => void;
   currentUser: User | null;
   selectedPlanCount: number;
   totalCredits: number;
@@ -37,11 +45,15 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
+  programmeRules,
+  onOpenProgrammeRules,
   onOpenProfile,
   onOpenCounselor,
   onOpenWalkthrough,
   onOpenAuth,
   onOpenDatabaseExport,
+  onOpenSiwesPortal,
+  onOpenCompliance,
   currentUser,
   selectedPlanCount,
   totalCredits,
@@ -87,9 +99,18 @@ export const Header: React.FC<HeaderProps> = ({
                 <h1 className="text-xs sm:text-sm lg:text-base font-extrabold tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
                   CURRICULUM <span className="text-blue-600 dark:text-blue-400">ARCHITECT</span>
                 </h1>
-                <span className="hidden sm:inline-block text-[9px] bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-200/80 dark:border-blue-800 uppercase font-bold">
-                  B.Tech IT
-                </span>
+                
+                {/* Clickable Programme & Handbook Configuration Pill */}
+                {onOpenProgrammeRules && (
+                  <button
+                    onClick={onOpenProgrammeRules}
+                    className="hidden sm:inline-flex items-center space-x-1 text-[10px] bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/80 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-200/80 dark:border-blue-800 uppercase font-bold transition-all shadow-2xs"
+                    title="Click to configure Programme Rules & Semester Unit Limits"
+                  >
+                    <GraduationCap className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                    <span>{programmeRules ? `${programmeRules.institutionShortCode} • ${programmeRules.schoolShortCode}` : 'FUTMinna • SICT'}</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -159,17 +180,35 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Packaged Action Toolbar (Properly fitted, grouped, and responsive) */}
             <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-              
-              {/* Primary AI Counselor Action */}
-              <button
-                id="btn-ai-counselor"
-                onClick={onOpenCounselor}
-                className="flex items-center space-x-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 min-h-[36px]"
-                title="Academic & Career AI Counselor"
-              >
-                <Bot className="w-3.5 h-3.5 text-cyan-200" />
-                <span className="hidden min-[480px]:inline">Counselor</span>
-              </button>
+
+              {/* FUTMinna / NUC Compliance Button */}
+              {onOpenCompliance && (
+                <button
+                  id="btn-compliance-header"
+                  onClick={onOpenCompliance}
+                  className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-2xs min-h-[36px] flex items-center space-x-1.5 shrink-0"
+                  title="FUTMinna & NUC Curriculum Compliance Audit"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="hidden sm:inline">Compliance</span>
+                  <span className="sm:hidden">Audit</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                </button>
+              )}
+
+              {/* SIWES Portal Button (Direct Access) */}
+              {onOpenSiwesPortal && (
+                <button
+                  id="btn-siwes-portal-header"
+                  onClick={onOpenSiwesPortal}
+                  className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/80 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-2xs min-h-[36px] flex items-center space-x-1.5 shrink-0"
+                  title="SIWES Industrial Training Scheme & Eligibility Portal"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span className="hidden sm:inline">SIWES Portal</span>
+                  <span className="sm:hidden">SIWES</span>
+                </button>
+              )}
 
               {/* Direct Quick Buttons (visible on large/desktop screens for quick access) */}
               <div className="hidden 2xl:flex items-center space-x-1.5">
@@ -250,6 +289,44 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
 
                     <div className="py-1 space-y-0.5">
+                      {/* FUTMinna / NUC Curriculum Compliance */}
+                      {onOpenCompliance && (
+                        <button
+                          id="dropdown-item-compliance"
+                          onClick={() => {
+                            setIsToolsDropdownOpen(false);
+                            onOpenCompliance();
+                          }}
+                          className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center text-white shadow-xs">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-100" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-emerald-950 dark:text-emerald-200">FUTMinna / NUC Compliance</span>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">8-Dimension statutory accreditation audit</span>
+                          </div>
+                        </button>
+                      )}
+
+                      {/* AI Academic & Career Counselor */}
+                      <button
+                        id="dropdown-item-counselor"
+                        onClick={() => {
+                          setIsToolsDropdownOpen(false);
+                          onOpenCounselor();
+                        }}
+                        className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center text-white shadow-xs">
+                          <Bot className="w-3.5 h-3.5 text-cyan-200" />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-indigo-900 dark:text-indigo-200">AI Academic Counselor</span>
+                          <span className="block text-[10px] text-slate-500 dark:text-slate-400">Course guidance & career trajectory advice</span>
+                        </div>
+                      </button>
+
                       {/* Cloud Sync & Firebase */}
                       <button
                         onClick={() => {
@@ -271,6 +348,44 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                         {currentUser && <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>}
                       </button>
+
+                      {/* Programme Rules & Unit Limits */}
+                      {onOpenProgrammeRules && (
+                        <button
+                          onClick={() => {
+                            setIsToolsDropdownOpen(false);
+                            onOpenProgrammeRules();
+                          }}
+                          className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                            <GraduationCap className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-900 dark:text-white">Academic Programme Rules</span>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">Configure min/max units & graduation req.</span>
+                          </div>
+                        </button>
+                      )}
+
+                      {/* SIWES Industrial Training Scheme */}
+                      {onOpenSiwesPortal && (
+                        <button
+                          onClick={() => {
+                            setIsToolsDropdownOpen(false);
+                            onOpenSiwesPortal();
+                          }}
+                          className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                            <Building2 className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-900 dark:text-white">SIWES Industrial Portal</span>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">Statutory 6-month placement & defense audit</span>
+                          </div>
+                        </button>
+                      )}
 
                       {/* Export Database for FYP */}
                       <button

@@ -1,7 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Course, StudentProfile, AiInsightResponse, SemesterGoal } from '../types/curriculum';
+import { Course, StudentProfile, AiInsightResponse, SemesterGoal, AcademicProgrammeRules } from '../types/curriculum';
 import { BTECH_IT_COURSES, CAREER_TRACKS } from '../data/btechItCurriculum';
-import { SlidersHorizontal, Trash2, Sparkles, AlertTriangle, Download, CheckCircle2, Award, BookOpen, Clock, Zap, ShieldCheck, Layers, Calculator, Calendar, Target } from 'lucide-react';
+import { 
+  SlidersHorizontal, 
+  Trash2, 
+  Sparkles, 
+  AlertTriangle, 
+  Download, 
+  CheckCircle2, 
+  Award, 
+  BookOpen, 
+  Clock, 
+  Zap, 
+  ShieldCheck, 
+  Layers, 
+  Calculator, 
+  Calendar, 
+  Target,
+  Building2,
+  Briefcase,
+  Scale,
+  Settings2,
+  GraduationCap
+} from 'lucide-react';
 
 import { GraduationRoadmapView } from './planner/GraduationRoadmapView';
 import { GpaCalculatorView } from './planner/GpaCalculatorView';
@@ -11,6 +32,8 @@ import { SemesterGoalsTracker } from './planner/SemesterGoalsTracker';
 interface SemesterPlannerProps {
   selectedPlanCourseIds: string[];
   studentProfile: StudentProfile;
+  programmeRules?: AcademicProgrammeRules;
+  onOpenProgrammeRulesModal?: () => void;
   onRemovePlanCourse: (courseId: string) => void;
   onClearPlan: () => void;
   aiInsight: AiInsightResponse | null;
@@ -25,6 +48,8 @@ interface SemesterPlannerProps {
 export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
   selectedPlanCourseIds,
   studentProfile,
+  programmeRules,
+  onOpenProgrammeRulesModal,
   onRemovePlanCourse,
   onClearPlan,
   aiInsight,
@@ -77,7 +102,13 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
   
   const totalCredits = selectedCourses.reduce((sum, c) => sum + c.credits, 0);
   const totalWorkloadHours = selectedCourses.reduce((sum, c) => sum + c.workloadHours, 0);
-  const maxCreditsLimit = 24; // Standard NUC CCMAS / FUT Minna maximum semester credit cap
+  
+  // Dynamic Programme Rules Thresholds
+  const minCreditsLimit = programmeRules?.minSemesterUnits ?? 15;
+  const maxCreditsLimit = programmeRules?.maxSemesterUnits ?? 24;
+  const graduationRequirement = studentProfile.entryMode === 'Direct_Entry'
+    ? (programmeRules?.directEntryGraduationUnits ?? 120)
+    : (programmeRules?.graduationRequirementUnits ?? 150);
 
   const theoryCount = selectedCourses.filter(c => c.type === 'Core' || c.type === 'Elective').length;
   const labProjectCount = selectedCourses.filter(c => c.type === 'Lab' || c.type === 'Project').length;
@@ -196,6 +227,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
           studentProfile={studentProfile}
           selectedPlanCourseIds={selectedPlanCourseIds}
           customSemesterMap={customSemesterMap}
+          programmeRules={programmeRules}
           onUpdateCourseSemester={handleUpdateCourseSemester}
           onAutoGenerateRoadmap={handleAutoGenerateRoadmap}
           onOpenSyllabusModal={onOpenSyllabusModal}
@@ -207,6 +239,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
         <GpaCalculatorView
           studentProfile={studentProfile}
           selectedPlanCourseIds={selectedPlanCourseIds}
+          programmeRules={programmeRules}
         />
       )}
 
@@ -229,6 +262,46 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
 
       {plannerTab === 'ACTIVE' && (
         <div className="space-y-6 sm:space-y-8">
+          
+          {/* Institutional Academic Programme Rules Banner (Configurable by User) */}
+          <div className="bg-gradient-to-r from-blue-50/80 via-slate-50 to-indigo-50/80 dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-800/80 border border-blue-200/80 dark:border-blue-900/50 rounded-2xl p-4 sm:p-5 shadow-xs transition-colors">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2 flex-wrap">
+                  <span className="inline-flex items-center space-x-1 text-[10px] font-extrabold uppercase tracking-wider bg-blue-600 text-white px-2.5 py-0.5 rounded-md shadow-2xs">
+                    <GraduationCap className="w-3 h-3" />
+                    <span>Programme Rules</span>
+                  </span>
+                  <span className="text-xs font-extrabold text-slate-900 dark:text-white">
+                    {programmeRules?.institution || 'Federal University of Technology, Minna'}
+                  </span>
+                  <span className="text-slate-400 dark:text-slate-500">•</span>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    {programmeRules?.school || 'School of Information and Communication Technology (SICT)'}
+                  </span>
+                </div>
+                
+                <div className="flex items-center space-x-3 text-xs text-slate-600 dark:text-slate-300 flex-wrap gap-y-1">
+                  <span>Programme: <strong className="text-blue-700 dark:text-blue-400 font-bold">{programmeRules?.programme || 'Information Technology'}</strong></span>
+                  <span className="text-slate-300 dark:text-slate-700">|</span>
+                  <span>Semester Units: <strong className="text-slate-900 dark:text-white font-bold">{minCreditsLimit} – {maxCreditsLimit} Units</strong></span>
+                  <span className="text-slate-300 dark:text-slate-700">|</span>
+                  <span>Graduation Requirement: <strong className="text-slate-900 dark:text-white font-bold">{graduationRequirement} Units ({studentProfile.entryMode === 'Direct_Entry' ? 'Direct Entry' : 'UTME'})</strong></span>
+                </div>
+              </div>
+
+              {onOpenProgrammeRulesModal && (
+                <button
+                  onClick={onOpenProgrammeRulesModal}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-bold transition-colors shadow-2xs shrink-0"
+                >
+                  <Settings2 className="w-3.5 h-3.5" />
+                  <span>Configure Handbook Rules</span>
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Header Box */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xs transition-colors">
             <div>
@@ -238,7 +311,7 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Semester {studentProfile.currentSemester} Course Schedule Planner</h2>
               <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
-                Combine required core subjects with top-recommended electives while managing your credit limits and study workload.
+                Combine required core subjects with top-recommended electives while managing your institutional credit limits and study workload.
               </p>
             </div>
 
@@ -298,14 +371,19 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
               <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    totalCredits > maxCreditsLimit ? 'bg-red-500' : totalCredits >= 18 ? 'bg-blue-600' : 'bg-amber-500'
+                    totalCredits > maxCreditsLimit ? 'bg-red-500' : totalCredits < minCreditsLimit ? 'bg-amber-500' : 'bg-blue-600'
                   }`}
                   style={{ width: `${Math.min(100, (totalCredits / maxCreditsLimit) * 100)}%` }}
                 ></div>
               </div>
               {totalCredits > maxCreditsLimit && (
                 <p className="text-xs text-red-600 dark:text-red-400 mt-2 font-bold flex items-center">
-                  <AlertTriangle className="w-3.5 h-3.5 mr-1 flex-shrink-0" /> Exceeds NUC / FUT Minna 24 Unit cap!
+                  <AlertTriangle className="w-3.5 h-3.5 mr-1 flex-shrink-0" /> Exceeds {programmeRules?.institutionShortCode || 'institutional'} maximum {maxCreditsLimit} Unit cap!
+                </p>
+              )}
+              {totalCredits > 0 && totalCredits < minCreditsLimit && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 font-bold flex items-center">
+                  <AlertTriangle className="w-3.5 h-3.5 mr-1 flex-shrink-0" /> Below minimum {minCreditsLimit} Unit threshold!
                 </p>
               )}
             </div>
@@ -337,16 +415,22 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
 
           </div>
 
-          {/* Selected Courses List - Grouped into Core and Electives */}
+          {/* Selected Courses List - Grouped into University Requirements and Industry Recommendations */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs transition-colors space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 gap-2">
               <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
                 Enrolled Course Schedule ({selectedCourses.length} Subjects • {totalCredits} Units)
               </h3>
-              <div className="flex items-center space-x-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                <span className="text-purple-600 dark:text-purple-400">{selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').length} Core</span>
+              <div className="flex items-center space-x-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex-wrap gap-y-1">
+                <span className="text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded-md border border-purple-200 dark:border-purple-800 flex items-center gap-1">
+                  <Building2 className="w-3 h-3" />
+                  {selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').length} University Core
+                </span>
                 <span>•</span>
-                <span className="text-blue-600 dark:text-blue-400">{selectedCourses.filter(c => c.type === 'Elective').length} Electives</span>
+                <span className="text-cyan-800 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded-md border border-cyan-200 dark:border-cyan-800 flex items-center gap-1">
+                  <Briefcase className="w-3 h-3" />
+                  {selectedCourses.filter(c => c.type === 'Elective').length} Career Electives
+                </span>
               </div>
             </div>
 
@@ -359,11 +443,14 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Core Courses Section */}
+                {/* University Requirements Section */}
                 {selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').length > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-[11px] font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">
-                      <span>📘 Mandatory Core Courses</span>
+                      <span className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5" />
+                        <span>🏛️ What the University Requires (Mandatory Core)</span>
+                      </span>
                       <span>{selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').reduce((s, c) => s + c.credits, 0)} Units</span>
                     </div>
                     <div className="space-y-2">
@@ -382,10 +469,13 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                                 {course.nucCcmasCode && (
                                   <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">NUC: {course.nucCcmasCode}</span>
                                 )}
+                                <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/80 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
+                                  Mandatory Senate Core
+                                </span>
                                 <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
                               </div>
                               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                                {course.domain} • {course.credits} Units • {course.workloadHours} hrs/wk
+                                {course.domain} • {course.credits} Statutory Units • {course.workloadHours} hrs/wk
                               </div>
                             </div>
                           </div>
@@ -411,21 +501,24 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                   </div>
                 )}
 
-                {/* Electives Section */}
+                {/* Industry Recommendations Section */}
                 {selectedCourses.filter(c => c.type === 'Elective').length > 0 && (
                   <div className="space-y-2 pt-1">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
-                      <span>🎯 Elective Specializations</span>
+                    <div className="flex items-center justify-between text-[11px] font-bold text-cyan-800 dark:text-cyan-300 uppercase tracking-wider">
+                      <span className="flex items-center gap-1.5">
+                        <Briefcase className="w-3.5 h-3.5" />
+                        <span>🚀 What Industry Recommends ({targetTrack.title})</span>
+                      </span>
                       <span>{selectedCourses.filter(c => c.type === 'Elective').reduce((s, c) => s + c.credits, 0)} Units</span>
                     </div>
                     <div className="space-y-2">
                       {selectedCourses.filter(c => c.type === 'Elective').map((course, idx) => (
                         <div
                           key={course.id}
-                          className="p-3.5 rounded-xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 flex items-center justify-between gap-4 text-xs"
+                          className="p-3.5 rounded-xl bg-cyan-50/40 dark:bg-cyan-950/20 border border-cyan-100 dark:border-cyan-900/50 flex items-center justify-between gap-4 text-xs"
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-300 font-bold flex items-center justify-center border border-blue-200 dark:border-blue-800 text-xs shadow-2xs">
+                            <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-cyan-700 dark:text-cyan-300 font-bold flex items-center justify-center border border-cyan-200 dark:border-cyan-800 text-xs shadow-2xs">
                               {idx + 1}
                             </div>
                             <div>
@@ -434,10 +527,13 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                                 {course.nucCcmasCode && (
                                   <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">NUC: {course.nucCcmasCode}</span>
                                 )}
+                                <span className="text-[10px] font-bold text-cyan-800 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-200 dark:border-cyan-800">
+                                  Career Skill Elective
+                                </span>
                                 <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
                               </div>
                               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                                {course.domain} • {course.credits} Units • {course.workloadHours} hrs/wk
+                                {course.domain} • {course.credits} Elective Units • Skills: {course.skillsAcquired.slice(0, 2).join(', ')}
                               </div>
                             </div>
                           </div>

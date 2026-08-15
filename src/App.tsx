@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import { StudentProfile, RecommendedCourseResult, SkillGapItem, Course, AiInsightResponse } from './types/curriculum';
+import { StudentProfile, RecommendedCourseResult, SkillGapItem, Course, AiInsightResponse, AcademicProgrammeRules } from './types/curriculum';
 import { INITIAL_STUDENT_PROFILE } from './data/btechItCurriculum';
+import { loadStoredProgrammeRules, saveStoredProgrammeRules } from './data/defaultProgrammeConfig';
 import { generateCourseRecommendations, calculateSkillGapMatrix } from './services/recommendationEngine';
 import {
   subscribeAuthState,
   subscribeStudentProfile,
   subscribeSemesterPlan,
+  subscribeProgrammeRules,
   saveStudentProfileCloud,
   saveSemesterPlanCloud,
+  saveProgrammeRulesCloud,
   loginAnonymously
 } from './services/firebase';
 
@@ -25,6 +28,10 @@ import { WelcomePanel } from './components/WelcomePanel';
 import { WelcomeWalkthroughModal } from './components/WelcomeWalkthroughModal';
 import { AuthModal } from './components/AuthModal';
 import { DatabaseExportModal } from './components/DatabaseExportModal';
+import { ProgrammeRulesModal } from './components/ProgrammeRulesModal';
+import { SiwesPortalModal } from './components/SiwesPortalModal';
+import { ComplianceModal } from './components/ComplianceModal';
+import { BTECH_IT_COURSES } from './data/btechItCurriculum';
 
 export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -36,8 +43,12 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isDatabaseExportModalOpen, setIsDatabaseExportModalOpen] = useState<boolean>(false);
+  const [isProgrammeRulesModalOpen, setIsProgrammeRulesModalOpen] = useState<boolean>(false);
+  const [isSiwesPortalOpen, setIsSiwesPortalOpen] = useState<boolean>(false);
+  const [isComplianceModalOpen, setIsComplianceModalOpen] = useState<boolean>(false);
 
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(INITIAL_STUDENT_PROFILE);
+  const [programmeRules, setProgrammeRules] = useState<AcademicProgrammeRules>(() => loadStoredProgrammeRules());
   const [recommendationMode, setRecommendationMode] = useState<'semantic-embeddings' | 'legacy-tfidf'>('semantic-embeddings');
   const [recommendations, setRecommendations] = useState<RecommendedCourseResult[]>([]);
   const [skillGapMatrix, setSkillGapMatrix] = useState<SkillGapItem[]>([]);
@@ -63,7 +74,7 @@ export default function App() {
     return () => unsubscribeAuth();
   }, []);
 
-  // Listen to Firestore Student Profile & Semester Plan changes when user is authenticated
+  // Listen to Firestore Student Profile, Semester Plan, and Programme Rules when authenticated
   useEffect(() => {
     if (!currentUser) return;
 
@@ -71,7 +82,6 @@ export default function App() {
       if (cloudProfile) {
         setStudentProfile(cloudProfile);
       } else {
-        // First time cloud user: seed Firestore with current local profile
         saveStudentProfileCloud(currentUser.uid, studentProfile);
       }
     });
@@ -80,14 +90,23 @@ export default function App() {
       if (cloudPlanIds !== null) {
         setSelectedPlanCourseIds(cloudPlanIds);
       } else {
-        // First time cloud user: seed Firestore with current local semester plan
         saveSemesterPlanCloud(currentUser.uid, selectedPlanCourseIds);
+      }
+    });
+
+    const unsubscribeRules = subscribeProgrammeRules(currentUser.uid, (cloudRules) => {
+      if (cloudRules) {
+        setProgrammeRules(cloudRules);
+        saveStoredProgrammeRules(cloudRules);
+      } else {
+        saveProgrammeRulesCloud(currentUser.uid, programmeRules);
       }
     });
 
     return () => {
       unsubscribeProfile();
       unsubscribePlan();
+      unsubscribeRules();
     };
   }, [currentUser]);
 
@@ -130,6 +149,14 @@ export default function App() {
     setStudentProfile(updatedProfile);
     if (currentUser) {
       saveStudentProfileCloud(currentUser.uid, updatedProfile);
+    }
+  };
+
+  const handleSaveProgrammeRules = (updatedRules: AcademicProgrammeRules) => {
+    setProgrammeRules(updatedRules);
+    saveStoredProgrammeRules(updatedRules);
+    if (currentUser) {
+      saveProgrammeRulesCloud(currentUser.uid, updatedRules);
     }
   };
 
@@ -222,11 +249,15 @@ export default function App() {
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        programmeRules={programmeRules}
+        onOpenProgrammeRules={() => setIsProgrammeRulesModalOpen(true)}
         onOpenProfile={() => setIsProfileModalOpen(true)}
         onOpenCounselor={() => setIsCounselorModalOpen(true)}
         onOpenWalkthrough={() => setIsWalkthroughModalOpen(true)}
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onOpenDatabaseExport={() => setIsDatabaseExportModalOpen(true)}
+        onOpenSiwesPortal={() => setIsSiwesPortalOpen(true)}
+        onOpenCompliance={() => setIsComplianceModalOpen(true)}
         currentUser={currentUser}
         selectedPlanCount={selectedPlanCourseIds.length}
         totalCredits={recommendations.filter(r => selectedPlanCourseIds.includes(r.course.id)).reduce((sum, r) => sum + r.course.credits, 0)}
@@ -240,9 +271,13 @@ export default function App() {
         {/* Interactive Top Student Academic Status & Metrics Bar */}
         <TopStudentDashboardBar
           studentProfile={studentProfile}
+          programmeRules={programmeRules}
           onUpdateProfile={(updated) => handleSaveProfile({ ...studentProfile, ...updated })}
           onOpenProfileModal={() => setIsProfileModalOpen(true)}
+          onOpenProgrammeRulesModal={() => setIsProgrammeRulesModalOpen(true)}
           onOpenCounselorModal={() => setIsCounselorModalOpen(true)}
+          onOpenSiwesPortal={() => setIsSiwesPortalOpen(true)}
+          onOpenCompliance={() => setIsComplianceModalOpen(true)}
           selectedPlanCourseIds={selectedPlanCourseIds}
           totalPlannedCredits={recommendations.filter(r => selectedPlanCourseIds.includes(r.course.id)).reduce((sum, r) => sum + r.course.credits, 0)}
         />
@@ -259,10 +294,13 @@ export default function App() {
           <RecommendationDashboard
             recommendations={recommendations}
             studentProfile={studentProfile}
+            programmeRules={programmeRules}
             selectedPlanCourseIds={selectedPlanCourseIds}
             onTogglePlanCourse={handleTogglePlanCourse}
             onOpenSyllabusModal={course => setActiveSyllabusCourse(course)}
             onOpenCounselor={() => setIsCounselorModalOpen(true)}
+            onOpenCompliance={() => setIsComplianceModalOpen(true)}
+            onOpenSiwesPortal={() => setIsSiwesPortalOpen(true)}
             recommendationMode={recommendationMode}
             onToggleRecommendationMode={toggleRecommendationMode}
           />
@@ -289,6 +327,8 @@ export default function App() {
           <SemesterPlanner
             selectedPlanCourseIds={selectedPlanCourseIds}
             studentProfile={studentProfile}
+            programmeRules={programmeRules}
+            onOpenProgrammeRulesModal={() => setIsProgrammeRulesModalOpen(true)}
             onRemovePlanCourse={handleTogglePlanCourse}
             onClearPlan={handleClearPlan}
             aiInsight={aiInsight}
@@ -306,8 +346,25 @@ export default function App() {
       {/* Footer */}
       <footer className="py-6 sm:py-8 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 sm:px-8 text-xs text-slate-500 dark:text-slate-400 shrink-0 mt-12 sm:mt-16 transition-colors">
         <div className="max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span className="font-medium text-slate-600 dark:text-slate-300">B.Tech Information Technology Academic Planner • AICTE Model Curriculum</span>
-          <span className="text-slate-400 dark:text-slate-500">Curriculum Architect</span>
+          <div className="flex items-center space-x-2">
+            <span className="font-medium text-slate-700 dark:text-slate-200">
+              {programmeRules.institutionShortCode} • {programmeRules.schoolShortCode} • {programmeRules.programme}
+            </span>
+            <span className="text-slate-400 dark:text-slate-500 hidden sm:inline">•</span>
+            <span className="text-slate-500 dark:text-slate-400 hidden sm:inline">
+              Semester Units: {programmeRules.minSemesterUnits}–{programmeRules.maxSemesterUnits} | Graduation: {programmeRules.graduationRequirementUnits} Cr
+            </span>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setIsProgrammeRulesModalOpen(true)}
+              className="text-blue-600 dark:text-blue-400 hover:underline font-semibold"
+            >
+              Configure Handbook Rules
+            </button>
+            <span className="text-slate-300 dark:text-slate-700">|</span>
+            <span className="text-slate-400 dark:text-slate-500">NUC CCMAS Engine</span>
+          </div>
         </div>
       </footer>
 
@@ -315,8 +372,18 @@ export default function App() {
       {isProfileModalOpen && (
         <ProfileSetup
           profile={studentProfile}
+          programmeRules={programmeRules}
+          onOpenProgrammeRulesModal={() => setIsProgrammeRulesModalOpen(true)}
           onSaveProfile={handleSaveProfile}
           onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
+
+      {isProgrammeRulesModalOpen && (
+        <ProgrammeRulesModal
+          currentRules={programmeRules}
+          onSaveRules={handleSaveProgrammeRules}
+          onClose={() => setIsProgrammeRulesModalOpen(false)}
         />
       )}
 
@@ -357,9 +424,21 @@ export default function App() {
         />
       )}
 
+      {isSiwesPortalOpen && (
+        <SiwesPortalModal
+          isOpen={isSiwesPortalOpen}
+          onClose={() => setIsSiwesPortalOpen(false)}
+          studentProfile={studentProfile}
+          onUpdateProfile={handleSaveProfile}
+          programmeRules={programmeRules}
+          allCourses={BTECH_IT_COURSES}
+        />
+      )}
+
       <SyllabusModal
         course={activeSyllabusCourse}
         onClose={() => setActiveSyllabusCourse(null)}
+        onOpenSiwesPortal={() => setIsSiwesPortalOpen(true)}
       />
 
     </div>

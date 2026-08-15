@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { StudentProfile, Grade, GRADE_POINTS } from '../../types/curriculum';
+import { StudentProfile, Grade, GRADE_POINTS, AcademicProgrammeRules } from '../../types/curriculum';
 import { BTECH_IT_COURSES } from '../../data/btechItCurriculum';
 import { Award, Calculator, Target, TrendingUp, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface GpaCalculatorViewProps {
   studentProfile: StudentProfile;
   selectedPlanCourseIds: string[];
+  programmeRules?: AcademicProgrammeRules;
 }
 
 export const GpaCalculatorView: React.FC<GpaCalculatorViewProps> = ({
   studentProfile,
-  selectedPlanCourseIds
+  selectedPlanCourseIds,
+  programmeRules
 }) => {
-  const [targetCgpa, setTargetCgpa] = useState<number>(8.5);
+  const [targetCgpa, setTargetCgpa] = useState<number>(4.5); // Nigerian 5.0 scale default or custom
   const [simulatedGrades, setSimulatedGrades] = useState<Record<string, Grade>>({});
 
   // Get completed courses and their grades
@@ -35,8 +37,11 @@ export const GpaCalculatorView: React.FC<GpaCalculatorViewProps> = ({
   const plannedCourses = BTECH_IT_COURSES.filter(c => selectedPlanCourseIds.includes(c.id));
   const plannedCredits = plannedCourses.reduce((sum, c) => sum + c.credits, 0);
 
-  // Total B.Tech Degree Credits (typically ~160 Cr over 8 Semesters)
-  const totalDegreeCredits = 160;
+  // Total B.Tech Degree Credits dynamically from Academic Programme Rules
+  const totalDegreeCredits = studentProfile.entryMode === 'Direct_Entry'
+    ? (programmeRules?.directEntryGraduationUnits ?? 120)
+    : (programmeRules?.graduationRequirementUnits ?? 150);
+
   const remainingCredits = Math.max(0, totalDegreeCredits - completedCredits);
 
   // Calculate required average SGPA for remaining semesters to reach target CGPA
