@@ -22,15 +22,19 @@ import {
   Moon,
   Info,
   Layers,
-  Award
+  Award,
+  Cpu,
+  Database,
+  Code2,
+  Lock,
+  GitBranch,
+  Check,
+  TrendingUp,
+  Clock,
+  Briefcase
 } from 'lucide-react';
 import { StudentProfile, AcademicProgrammeRules } from '../types/curriculum';
 import { motion } from 'motion/react';
-
-// Static Asset Paths (Direct Vite public/src asset paths)
-const heroBannerImg = '/src/assets/images/curriculum_hero_banner_1786878385985.jpg';
-const careerImg = '/src/assets/images/career_pathway_preview_1786878403362.jpg';
-const complianceImg = '/src/assets/images/compliance_audit_preview_1786878415990.jpg';
 
 interface IntroductoryPageProps {
   onEnterApp: () => void;
@@ -323,49 +327,110 @@ export const IntroductoryPage: React.FC<IntroductoryPageProps> = ({
               </div>
             </motion.div>
 
-            {/* Right Column: High Impact Cinematic Visual Asset */}
+            {/* Right Column: High Impact Interactive UI Console Preview */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.1 }}
               className="lg:col-span-5 relative"
             >
-              <div className="relative mx-auto max-w-lg lg:max-w-none rounded-3xl p-2 bg-gradient-to-b from-blue-500/30 via-slate-800/40 to-cyan-500/20 border border-slate-700/80 shadow-2xl overflow-hidden group">
+              <div className="relative mx-auto max-w-lg lg:max-w-none rounded-3xl p-1 bg-gradient-to-b from-blue-500/30 via-slate-800/60 to-cyan-500/20 border border-slate-700/80 shadow-2xl overflow-hidden">
                 
-                {/* Visual Image container with fallback and rounded border */}
-                <div className="relative rounded-2xl overflow-hidden aspect-[16/10] bg-slate-900">
-                  <img
-                    src={heroBannerImg}
-                    alt="FUTMinna B.Tech IT Computing Lab and Curriculum Architect"
-                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-
-                  {/* Overlaid Floating Metrics Card */}
-                  <div className="absolute bottom-3 left-3 right-3 p-3.5 rounded-xl bg-slate-950/90 backdrop-blur-md border border-slate-700/80 shadow-lg">
-                    <div className="flex items-center justify-between text-xs font-semibold">
-                      <div className="flex items-center space-x-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span className="text-white font-bold">FUTMinna Academic Engine</span>
+                {/* Visual Native UI Container */}
+                <div className="rounded-[22px] bg-slate-950 p-4 sm:p-5 space-y-4 border border-slate-800">
+                  
+                  {/* Console Header */}
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex space-x-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
                       </div>
-                      <span className="text-cyan-400 font-mono text-[11px]">CCMAS 150 Units OK</span>
+                      <span className="text-[11px] font-mono text-slate-400 pl-1">planner_engine.ccmas</span>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-slate-800 text-[10px]">
-                      <div>
-                        <div className="text-slate-400">Curriculum</div>
-                        <div className="text-white font-bold">5 Academic Years</div>
-                      </div>
-                      <div>
-                        <div className="text-slate-400">Courses</div>
-                        <div className="text-white font-bold">70+ B.Tech Units</div>
-                      </div>
-                      <div>
-                        <div className="text-slate-400">Career Tracks</div>
-                        <div className="text-emerald-400 font-bold">5 High-Demand</div>
-                      </div>
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span>0 CLASHES</span>
+                    </span>
+                  </div>
+
+                  {/* Student Status Summary Bar */}
+                  <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] text-slate-400 font-medium">Active Degree Profile</div>
+                      <div className="text-xs font-bold text-white">300L Harmattan Semester</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] text-slate-400 font-medium">Load Units</div>
+                      <div className="text-xs font-mono font-bold text-cyan-400">18 / 24 Units</div>
                     </div>
                   </div>
+
+                  {/* Course Cards Preview */}
+                  <div className="space-y-2">
+                    <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-blue-500/40 transition-colors flex items-center justify-between">
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-mono font-bold text-[10px] shrink-0">
+                          3U
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-slate-200 truncate">ITP 311: Web App Architecture</div>
+                          <div className="text-[10px] text-slate-400">Mon 10:00 - 12:00 • LT II</div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-md shrink-0">
+                        Prereq OK
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-blue-500/40 transition-colors flex items-center justify-between">
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-mono font-bold text-[10px] shrink-0">
+                          3U
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-slate-200 truncate">ITP 313: Operating Systems</div>
+                          <div className="text-[10px] text-slate-400">Wed 08:00 - 10:00 • SICT Lab 1</div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-semibold text-cyan-400 bg-cyan-950/60 border border-cyan-800/60 px-2 py-0.5 rounded-md shrink-0">
+                        Core Unit
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-blue-500/40 transition-colors flex items-center justify-between">
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-mono font-bold text-[10px] shrink-0">
+                          3U
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-slate-200 truncate">ITP 315: Database Systems</div>
+                          <div className="text-[10px] text-slate-400">Thu 14:00 - 16:00 • ETF Hall</div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-semibold text-purple-400 bg-purple-950/60 border border-purple-800/60 px-2 py-0.5 rounded-md shrink-0">
+                        AI Matched
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Footer Metrics */}
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800 text-[10px]">
+                    <div className="p-2 rounded-lg bg-slate-900/80 text-center">
+                      <div className="text-slate-400">Curriculum</div>
+                      <div className="text-white font-bold">5-Year B.Tech</div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-slate-900/80 text-center">
+                      <div className="text-slate-400">Courses</div>
+                      <div className="text-white font-bold">70+ Units</div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-slate-900/80 text-center">
+                      <div className="text-slate-400">Career Radar</div>
+                      <div className="text-emerald-400 font-bold">5 Tracks</div>
+                    </div>
+                  </div>
+
                 </div>
 
               </div>
@@ -438,7 +503,7 @@ export const IntroductoryPage: React.FC<IntroductoryPageProps> = ({
           </div>
         </section>
 
-        {/* SECTION 2: VISUAL PILLARS (Immersive Feature Breakdown with Image Previews) */}
+        {/* SECTION 2: VISUAL PILLARS (Immersive Feature Breakdown with Live UI Previews) */}
         <section className="space-y-12">
           
           <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -485,25 +550,121 @@ export const IntroductoryPage: React.FC<IntroductoryPageProps> = ({
                 </ul>
               </div>
               
-              <div className="lg:col-span-6 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl bg-slate-950 aspect-[4/3]">
-                <img 
-                  src={careerImg} 
-                  alt="Career Pathway and Skills Matrix Preview" 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
+              {/* Pillar 1 Live UI Card */}
+              <div className="lg:col-span-6 rounded-2xl border border-slate-700/80 shadow-xl bg-slate-950 p-5 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="flex items-center space-x-2">
+                    <Briefcase className="w-4 h-4 text-cyan-400" />
+                    <span className="text-xs font-bold text-white">Skill Coverage Matrix</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/60 font-bold">
+                    Target: Cloud & DevOps (96% Match)
+                  </span>
+                </div>
+
+                {/* Skill Bars */}
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-300 mb-1">
+                      <span>Distributed Architectures & Microservices</span>
+                      <span className="text-cyan-400 font-mono">94%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" style={{ width: '94%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-300 mb-1">
+                      <span>Cloud Infrastructure & Containers</span>
+                      <span className="text-emerald-400 font-mono">89%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style={{ width: '89%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-300 mb-1">
+                      <span>Network Security & Protocol Verification</span>
+                      <span className="text-indigo-400 font-mono">92%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-400 rounded-full" style={{ width: '92%' }}></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommended Elective Badges */}
+                <div className="pt-2 border-t border-slate-800/80 space-y-2">
+                  <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Top Recommended Electives</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+                      <span className="text-slate-200 font-medium">ITP 413 Cloud Systems</span>
+                      <span className="text-cyan-400 font-bold">+15% Skill</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+                      <span className="text-slate-200 font-medium">CPT 421 Virtualization</span>
+                      <span className="text-emerald-400 font-bold">+12% Skill</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Pillar 2: Statutory Compliance & Graduation Clearance */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8">
-              <div className="lg:col-span-6 order-2 lg:order-1 rounded-2xl overflow-hidden border border-slate-700/80 shadow-xl bg-slate-950 aspect-[4/3]">
-                <img 
-                  src={complianceImg} 
-                  alt="FUTMinna NUC Compliance and Degree Audit Preview" 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
+              
+              {/* Pillar 2 Live UI Card */}
+              <div className="lg:col-span-6 order-2 lg:order-1 rounded-2xl border border-slate-700/80 shadow-xl bg-slate-950 p-5 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="flex items-center space-x-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-white">8-Dimension Senate Audit</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/60 font-bold">
+                    8 / 8 Checks Passed (100%)
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="text-slate-200 font-medium">NUC CCMAS Total Graduation Units</span>
+                    </div>
+                    <span className="font-mono text-emerald-400 font-bold text-[11px]">154 / 150 Min</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="text-slate-200 font-medium">SICT Departmental Core Units</span>
+                    </div>
+                    <span className="font-mono text-emerald-400 font-bold text-[11px]">48 / 48 Cleared</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="text-slate-200 font-medium">Semester Credit Bounds (15–24)</span>
+                    </div>
+                    <span className="font-mono text-cyan-400 font-bold text-[11px]">Validated</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="text-slate-200 font-medium">SIWES I & II Industrial Placement</span>
+                    </div>
+                    <span className="font-mono text-purple-400 font-bold text-[11px]">Logbook OK</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
+                  <span>Senate Reference: FUTM/SICT/BTECH-IT</span>
+                  <span className="text-emerald-400 font-bold">Graduation Ready</span>
+                </div>
               </div>
 
               <div className="lg:col-span-6 order-1 lg:order-2 space-y-4">
