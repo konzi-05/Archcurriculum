@@ -178,67 +178,14 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </nav>
 
-            {/* Packaged Action Toolbar (Properly fitted, grouped, and responsive) */}
-            <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-
-              {/* FUTMinna / NUC Compliance Button */}
-              {onOpenCompliance && (
-                <button
-                  id="btn-compliance-header"
-                  onClick={onOpenCompliance}
-                  className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-2xs min-h-[36px] flex items-center space-x-1.5 shrink-0"
-                  title="FUTMinna & NUC Curriculum Compliance Audit"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span className="hidden sm:inline">Compliance</span>
-                  <span className="sm:hidden">Audit</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                </button>
-              )}
-
-              {/* SIWES Portal Button (Direct Access) */}
-              {onOpenSiwesPortal && (
-                <button
-                  id="btn-siwes-portal-header"
-                  onClick={onOpenSiwesPortal}
-                  className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/80 dark:hover:bg-blue-900/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-2xs min-h-[36px] flex items-center space-x-1.5 shrink-0"
-                  title="SIWES Industrial Training Scheme & Eligibility Portal"
-                >
-                  <Building2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  <span className="hidden sm:inline">SIWES Portal</span>
-                  <span className="sm:hidden">SIWES</span>
-                </button>
-              )}
-
-              {/* Direct Quick Buttons (visible on large/desktop screens for quick access) */}
-              <div className="hidden 2xl:flex items-center space-x-1.5">
-                <button
-                  id="btn-export-database-desktop"
-                  onClick={onOpenDatabaseExport}
-                  className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/80 dark:hover:bg-blue-900/80 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 min-h-[36px] shrink-0"
-                  title="Export Database & Schemas for FYP"
-                >
-                  <FileCode className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                  <span>Export DB</span>
-                </button>
-
-                <button
-                  id="btn-cloud-account-desktop"
-                  onClick={onOpenAuth}
-                  className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 min-h-[36px] shrink-0"
-                  title="Firebase Auth & Cloud Database Sync"
-                >
-                  <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>{currentUser ? (currentUser.displayName?.split(' ')[0] || 'Cloud Synced') : 'Cloud Sync'}</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
-                </button>
-              </div>
+            {/* Packaged Action Toolbar (Clean, properly fitted, and aligned with no overflow) */}
+            <div className="flex items-center space-x-2 shrink-0">
 
               {/* Profile Setup Trigger Button */}
               <button
                 id="btn-edit-profile"
                 onClick={onOpenProfile}
-                className="bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all shadow-2xs min-h-[36px] flex items-center space-x-1.5 shrink-0"
+                className="bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs min-h-[36px] flex items-center space-x-1.5 shrink-0"
                 title="Edit Student Profile & Target Career"
               >
                 <UserIcon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
@@ -264,15 +211,16 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   id="btn-header-tools-menu"
                   onClick={() => setIsToolsDropdownOpen(!isToolsDropdownOpen)}
-                  className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-xl border text-xs font-bold transition-all min-h-[36px] ${
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all min-h-[36px] ${
                     isToolsDropdownOpen
                       ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-2xs'
                   }`}
-                  title="More Tools & Settings"
+                  title="Tools, Compliance & Utilities"
                 >
                   <Layers className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">Tools</span>
+                  <span>Tools</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
                   <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isToolsDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -280,16 +228,16 @@ export const Header: React.FC<HeaderProps> = ({
                 {isToolsDropdownOpen && (
                   <div 
                     id="header-tools-dropdown"
-                    className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-slate-800 dark:text-slate-100"
+                    className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-slate-800 dark:text-slate-100"
                   >
                     <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Academic Tools & Cloud
+                        Academic Tools & Services
                       </p>
                     </div>
 
-                    <div className="py-1 space-y-0.5">
-                      {/* FUTMinna / NUC Curriculum Compliance */}
+                    <div className="py-1 space-y-0.5 max-h-[75vh] overflow-y-auto">
+                      {/* FUTMinna / NUC Curriculum Compliance Audit */}
                       {onOpenCompliance && (
                         <button
                           id="dropdown-item-compliance"
@@ -297,14 +245,40 @@ export const Header: React.FC<HeaderProps> = ({
                             setIsToolsDropdownOpen(false);
                             onOpenCompliance();
                           }}
-                          className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50"
+                          className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-emerald-100/70 dark:hover:bg-emerald-950/60 text-left transition-colors bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/90 dark:border-emerald-900/60"
                         >
-                          <div className="w-7 h-7 rounded-lg bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center text-white shadow-xs">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center text-white shadow-xs shrink-0">
                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-100" />
                           </div>
-                          <div>
-                            <span className="block font-bold text-emerald-950 dark:text-emerald-200">FUTMinna / NUC Compliance</span>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">8-Dimension statutory accreditation audit</span>
+                          <div className="min-w-0">
+                            <div className="flex items-center space-x-1.5">
+                              <span className="block font-bold text-emerald-950 dark:text-emerald-200 truncate">FUTMinna / NUC Compliance</span>
+                              <span className="px-1.5 py-0.2 rounded-md bg-emerald-200 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-100 text-[9px] font-extrabold uppercase">Audit</span>
+                            </div>
+                            <span className="block text-[10px] text-emerald-700/80 dark:text-emerald-400/80 truncate">8-Dimension statutory accreditation audit</span>
+                          </div>
+                        </button>
+                      )}
+
+                      {/* SIWES Industrial Training Scheme */}
+                      {onOpenSiwesPortal && (
+                        <button
+                          id="dropdown-item-siwes"
+                          onClick={() => {
+                            setIsToolsDropdownOpen(false);
+                            onOpenSiwesPortal();
+                          }}
+                          className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-blue-100/70 dark:hover:bg-blue-950/60 text-left transition-colors bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/50"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-blue-600 dark:bg-blue-500 flex items-center justify-center text-white shadow-xs shrink-0">
+                            <Building2 className="w-3.5 h-3.5 text-blue-100" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center space-x-1.5">
+                              <span className="block font-bold text-blue-950 dark:text-blue-200 truncate">SIWES Industrial Portal</span>
+                              <span className="px-1.5 py-0.2 rounded-md bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100 text-[9px] font-extrabold uppercase">IT 400L</span>
+                            </div>
+                            <span className="block text-[10px] text-blue-700/80 dark:text-blue-400/80 truncate">Statutory 6-month placement & defense</span>
                           </div>
                         </button>
                       )}
@@ -316,133 +290,101 @@ export const Header: React.FC<HeaderProps> = ({
                           setIsToolsDropdownOpen(false);
                           onOpenCounselor();
                         }}
-                        className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50"
+                        className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-indigo-100/70 dark:hover:bg-indigo-950/60 text-left transition-colors bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-900/50"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center text-white shadow-xs">
-                          <Bot className="w-3.5 h-3.5 text-cyan-200" />
+                        <div className="w-7 h-7 rounded-lg bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center text-white shadow-xs shrink-0">
+                          <Bot className="w-3.5 h-3.5 text-indigo-100" />
                         </div>
-                        <div>
-                          <span className="block font-bold text-indigo-900 dark:text-indigo-200">AI Academic Counselor</span>
-                          <span className="block text-[10px] text-slate-500 dark:text-slate-400">Course guidance & career trajectory advice</span>
+                        <div className="min-w-0">
+                          <span className="block font-bold text-indigo-950 dark:text-indigo-200 truncate">AI Academic Counselor</span>
+                          <span className="block text-[10px] text-indigo-700/80 dark:text-indigo-400/80 truncate">Grounded course & career trajectory advice</span>
                         </div>
                       </button>
 
                       {/* Cloud Sync & Firebase */}
                       <button
+                        id="dropdown-item-cloud-sync"
                         onClick={() => {
                           setIsToolsDropdownOpen(false);
                           onOpenAuth();
                         }}
                         className="w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
                       >
-                        <div className="flex items-center space-x-2.5">
-                          <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <div className="flex items-center space-x-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
                             <Database className="w-3.5 h-3.5" />
                           </div>
-                          <div>
-                            <span className="block font-bold text-slate-900 dark:text-white">Cloud Database Sync</span>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">
+                          <div className="min-w-0">
+                            <span className="block font-bold text-slate-900 dark:text-white truncate">Cloud Database Sync</span>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
                               {currentUser ? `Connected (${currentUser.displayName || currentUser.email})` : 'Sync semester plans across devices'}
                             </span>
                           </div>
                         </div>
-                        {currentUser && <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>}
+                        {currentUser && <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ml-1"></span>}
                       </button>
 
                       {/* Programme Rules & Unit Limits */}
                       {onOpenProgrammeRules && (
                         <button
+                          id="dropdown-item-programme-rules"
                           onClick={() => {
                             setIsToolsDropdownOpen(false);
                             onOpenProgrammeRules();
                           }}
                           className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
                         >
-                          <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                          <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
                             <GraduationCap className="w-3.5 h-3.5" />
                           </div>
-                          <div>
-                            <span className="block font-bold text-slate-900 dark:text-white">Academic Programme Rules</span>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">Configure min/max units & graduation req.</span>
-                          </div>
-                        </button>
-                      )}
-
-                      {/* SIWES Industrial Training Scheme */}
-                      {onOpenSiwesPortal && (
-                        <button
-                          onClick={() => {
-                            setIsToolsDropdownOpen(false);
-                            onOpenSiwesPortal();
-                          }}
-                          className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
-                        >
-                          <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                            <Building2 className="w-3.5 h-3.5" />
-                          </div>
-                          <div>
-                            <span className="block font-bold text-slate-900 dark:text-white">SIWES Industrial Portal</span>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">Statutory 6-month placement & defense audit</span>
+                          <div className="min-w-0">
+                            <span className="block font-bold text-slate-900 dark:text-white truncate">Academic Programme Rules</span>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">Configure min/max units & graduation req.</span>
                           </div>
                         </button>
                       )}
 
                       {/* Export Database for FYP */}
                       <button
+                        id="dropdown-item-export-db"
                         onClick={() => {
                           setIsToolsDropdownOpen(false);
                           if (onOpenDatabaseExport) onOpenDatabaseExport();
                         }}
                         className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-950/80 border border-cyan-200 dark:border-cyan-800 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shrink-0">
                           <FileCode className="w-3.5 h-3.5" />
                         </div>
-                        <div>
-                          <span className="block font-bold text-slate-900 dark:text-white">Export Database (FYP)</span>
-                          <span className="block text-[10px] text-slate-500 dark:text-slate-400">SQL, JSON & schemas for project reports</span>
+                        <div className="min-w-0">
+                          <span className="block font-bold text-slate-900 dark:text-white truncate">Export Database (FYP)</span>
+                          <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">SQL, JSON & schemas for project reports</span>
                         </div>
                       </button>
 
                       {/* App Walkthrough Tour */}
                       <button
+                        id="dropdown-item-walkthrough"
                         onClick={() => {
                           setIsToolsDropdownOpen(false);
                           onOpenWalkthrough();
                         }}
                         className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                        <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/80 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
                           <HelpCircle className="w-3.5 h-3.5" />
                         </div>
-                        <div>
-                          <span className="block font-bold text-slate-900 dark:text-white">System Walkthrough</span>
-                          <span className="block text-[10px] text-slate-500 dark:text-slate-400">Interactive tour & features guide</span>
-                        </div>
-                      </button>
-
-                      {/* Student Profile Setup */}
-                      <button
-                        onClick={() => {
-                          setIsToolsDropdownOpen(false);
-                          onOpenProfile();
-                        }}
-                        className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
-                      >
-                        <div className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-800 flex items-center justify-center text-purple-600 dark:text-purple-400">
-                          <UserIcon className="w-3.5 h-3.5" />
-                        </div>
-                        <div>
-                          <span className="block font-bold text-slate-900 dark:text-white">Student Academic Profile</span>
-                          <span className="block text-[10px] text-slate-500 dark:text-slate-400">Configure GPA, passed courses & goals</span>
+                        <div className="min-w-0">
+                          <span className="block font-bold text-slate-900 dark:text-white truncate">System Walkthrough</span>
+                          <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">Interactive tour & feature instructions</span>
                         </div>
                       </button>
                     </div>
 
                     {/* Footer in dropdown */}
                     <div className="pt-2 mt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between px-2 text-[10px] text-slate-400">
-                      <span>B.Tech IT Curriculum Engine</span>
-                      <span className="text-blue-600 font-bold">AICTE Compliant</span>
+                      <span>B.Tech IT Engine</span>
+                      <span className="text-blue-600 dark:text-blue-400 font-bold">NUC / SICT Standards</span>
                     </div>
                   </div>
                 )}

@@ -194,7 +194,7 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
         </div>
 
         {/* Career Goal & Active Semester Selector Bar */}
-        <div className="flex items-center space-x-2 sm:space-x-3 w-full md:w-auto justify-between md:justify-end overflow-hidden flex-wrap gap-y-2">
+        <div className="flex items-center space-x-2 sm:space-x-3 w-full md:w-auto justify-start md:justify-end flex-wrap gap-y-2">
           
           {/* FUTMinna / NUC Compliance Status Badge & Trigger */}
           {onOpenCompliance && (

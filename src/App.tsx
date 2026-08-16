@@ -435,6 +435,25 @@ export default function App() {
         />
       )}
 
+      {isComplianceModalOpen && (
+        <ComplianceModal
+          isOpen={isComplianceModalOpen}
+          onClose={() => setIsComplianceModalOpen(false)}
+          studentProfile={studentProfile}
+          programmeRules={programmeRules}
+          allCourses={BTECH_IT_COURSES}
+          plannedCourseIds={selectedPlanCourseIds}
+          onOpenSiwesPortal={() => {
+            setIsComplianceModalOpen(false);
+            setIsSiwesPortalOpen(true);
+          }}
+          onOpenProgrammeRules={() => {
+            setIsComplianceModalOpen(false);
+            setIsProgrammeRulesModalOpen(true);
+          }}
+        />
+      )}
+
       <SyllabusModal
         course={activeSyllabusCourse}
         onClose={() => setActiveSyllabusCourse(null)}

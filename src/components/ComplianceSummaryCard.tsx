@@ -5,10 +5,11 @@ import { ShieldCheck, ExternalLink, Sparkles, CheckCircle2, ChevronRight, Award 
 
 interface ComplianceSummaryCardProps {
   studentProfile: StudentProfile;
-  programmeRules: AcademicProgrammeRules;
+  programmeRules?: AcademicProgrammeRules;
   allCourses: Course[];
   plannedCourseIds?: string[];
-  onOpenComplianceModal: () => void;
+  onOpenComplianceModal?: () => void;
+  onOpenDetailedAudit?: () => void;
   onOpenSiwesPortal?: () => void;
 }
 
@@ -18,11 +19,35 @@ export const ComplianceSummaryCard: React.FC<ComplianceSummaryCardProps> = ({
   allCourses,
   plannedCourseIds = [],
   onOpenComplianceModal,
+  onOpenDetailedAudit,
   onOpenSiwesPortal
 }) => {
+  const handleOpenModal = onOpenComplianceModal || onOpenDetailedAudit || (() => {});
+  
+  const effectiveRules = programmeRules || {
+    institution: 'Federal University of Technology, Minna',
+    institutionShortCode: 'FUTMinna',
+    school: 'School of Information and Communication Technology',
+    schoolShortCode: 'SICT',
+    programme: 'Information Technology',
+    programmeCode: 'B.Tech IT',
+    degreeAward: 'Bachelor of Technology (B.Tech)',
+    curriculumFramework: 'NUC Computing CCMAS / SICT Departmental Regulations',
+    minSemesterUnits: 15,
+    maxSemesterUnits: 24,
+    graduationRequirementUnits: 150,
+    directEntryGraduationUnits: 120,
+    minimumPassCGPA: 1.50,
+    allowDeanOverload: true,
+    maxOverloadUnits: 28,
+    handbookSourceNote: 'SICT B.Tech IT Handbook v2023.1',
+    isOfficialHandbookConfirmed: true,
+    isCustomConfigured: false
+  };
+
   const report = evaluateCurriculumCompliance(
     studentProfile,
-    programmeRules,
+    effectiveRules,
     allCourses,
     plannedCourseIds,
     true // include planned courses for complete picture
@@ -54,7 +79,7 @@ export const ComplianceSummaryCard: React.FC<ComplianceSummaryCardProps> = ({
 
         <button
           id="btn-open-compliance-modal"
-          onClick={onOpenComplianceModal}
+          onClick={handleOpenModal}
           className="flex items-center space-x-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 transition-colors"
         >
           <span>Audit Report</span>
