@@ -28,6 +28,8 @@ import { GraduationRoadmapView } from './planner/GraduationRoadmapView';
 import { GpaCalculatorView } from './planner/GpaCalculatorView';
 import { WeeklyTimetableGrid } from './planner/WeeklyTimetableGrid';
 import { SemesterGoalsTracker } from './planner/SemesterGoalsTracker';
+import { ScheduleConflictBanner } from './planner/ScheduleConflictBanner';
+import { detectScheduleConflicts, getCourseScheduleSlots } from '../services/scheduleConflictEngine';
 
 interface SemesterPlannerProps {
   selectedPlanCourseIds: string[];
@@ -113,6 +115,13 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
   const theoryCount = selectedCourses.filter(c => c.type === 'Core' || c.type === 'Elective').length;
   const labProjectCount = selectedCourses.filter(c => c.type === 'Lab' || c.type === 'Project').length;
 
+  // Automated Schedule & Conflict Detection Engine
+  const auditReport = detectScheduleConflicts(
+    selectedCourses,
+    studentProfile.currentSemester,
+    customSemesterMap
+  );
+
   // Handlers for goals
   const handleAddGoal = (newGoal: Omit<SemesterGoal, 'id'>) => {
     const created: SemesterGoal = {
@@ -169,6 +178,11 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           <span>Active Semester Plan ({selectedCourses.length})</span>
+          {auditReport.totalConflicts > 0 && (
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black bg-red-500 text-white animate-pulse">
+              {auditReport.totalConflicts}
+            </span>
+          )}
         </button>
 
         <button
@@ -205,6 +219,11 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
         >
           <Calendar className="w-3.5 h-3.5" />
           <span>Weekly Timetable</span>
+          {auditReport.timeSlotClashes.length > 0 && (
+            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black bg-red-500 text-white animate-bounce">
+              {auditReport.timeSlotClashes.length} {auditReport.timeSlotClashes.length === 1 ? 'Clash' : 'Clashes'}
+            </span>
+          )}
         </button>
 
         <button
@@ -247,6 +266,9 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
         <WeeklyTimetableGrid
           studentProfile={studentProfile}
           selectedPlanCourseIds={selectedPlanCourseIds}
+          customSemesterMap={customSemesterMap}
+          onRemovePlanCourse={onRemovePlanCourse}
+          onOpenSyllabusModal={onOpenSyllabusModal}
         />
       )}
 
@@ -301,6 +323,14 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
               )}
             </div>
           </div>
+
+          {/* Automated Scheduling Conflict Banner (Detects collisions, cross-semester clashes & prereq overlaps) */}
+          <ScheduleConflictBanner
+            auditReport={auditReport}
+            onRemoveCourse={onRemovePlanCourse}
+            onSwitchToTimetable={() => setPlannerTab('TIMETABLE')}
+            allCourses={BTECH_IT_COURSES}
+          />
 
           {/* Header Box */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xs transition-colors">
@@ -454,49 +484,79 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                       <span>{selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').reduce((s, c) => s + c.credits, 0)} Units</span>
                     </div>
                     <div className="space-y-2">
-                      {selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').map((course, idx) => (
-                        <div
-                          key={course.id}
-                          className="p-3.5 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/50 flex items-center justify-between gap-4 text-xs"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 font-bold flex items-center justify-center border border-purple-200 dark:border-purple-800 text-xs shadow-2xs">
-                              {idx + 1}
-                            </div>
-                            <div>
-                              <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                                <span className="font-bold text-purple-700 dark:text-purple-300 bg-purple-100/80 dark:bg-purple-900/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800 font-mono">{course.futMinnaCode || course.code}</span>
-                                {course.nucCcmasCode && (
-                                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">NUC: {course.nucCcmasCode}</span>
-                                )}
-                                <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/80 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
-                                  Mandatory Senate Core
-                                </span>
-                                <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
-                              </div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                                {course.domain} • {course.credits} Statutory Units • {course.workloadHours} hrs/wk
-                              </div>
-                            </div>
-                          </div>
+                      {selectedCourses.filter(c => c.type === 'Core' || c.type === 'Lab').map((course, idx) => {
+                        const isClashing = auditReport.clashedCourseIds.includes(course.id);
+                        const scheduleSlots = getCourseScheduleSlots(course);
 
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => onOpenSyllabusModal(course)}
-                              className="px-2.5 py-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-semibold rounded-lg hover:bg-white/80 dark:hover:bg-slate-800"
-                            >
-                              Syllabus
-                            </button>
-                            <button
-                              onClick={() => onRemovePlanCourse(course.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                              title="Remove course"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                        return (
+                          <div
+                            key={course.id}
+                            id={`enrolled-course-${course.id}`}
+                            className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs transition-all ${
+                              isClashing
+                                ? 'bg-red-50/60 dark:bg-red-950/30 border-red-300 dark:border-red-800 ring-1 ring-red-400/40 shadow-xs'
+                                : 'bg-purple-50/40 dark:bg-purple-950/20 border-purple-100 dark:border-purple-900/50'
+                            }`}
+                          >
+                            <div className="flex items-start space-x-3">
+                              <div className={`w-7 h-7 rounded-lg font-bold flex items-center justify-center border text-xs shadow-2xs shrink-0 mt-0.5 ${
+                                isClashing
+                                  ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-300'
+                                  : 'bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                              }`}>
+                                {idx + 1}
+                              </div>
+                              <div>
+                                <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                                  <span className="font-bold text-purple-700 dark:text-purple-300 bg-purple-100/80 dark:bg-purple-900/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800 font-mono">{course.futMinnaCode || course.code}</span>
+                                  {course.nucCcmasCode && (
+                                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">NUC: {course.nucCcmasCode}</span>
+                                  )}
+                                  <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/80 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
+                                    Mandatory Senate Core
+                                  </span>
+                                  {isClashing && (
+                                    <span className="text-[10px] font-black text-white bg-red-600 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                                      <AlertTriangle className="w-2.5 h-2.5" />
+                                      <span>Schedule Clash</span>
+                                    </span>
+                                  )}
+                                  <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
+                                </div>
+
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium flex items-center flex-wrap gap-x-2 gap-y-1">
+                                  <span>{course.domain}</span>
+                                  <span>•</span>
+                                  <span>{course.credits} Statutory Units</span>
+                                  <span>•</span>
+                                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300 font-semibold">
+                                    <Clock className="w-3 h-3 text-slate-400" />
+                                    <span>
+                                      {scheduleSlots.map(s => `${s.day.slice(0, 3)} ${s.startTime}`).join(', ')}
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2 self-end sm:self-center shrink-0">
+                              <button
+                                onClick={() => onOpenSyllabusModal(course)}
+                                className="px-2.5 py-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-semibold rounded-lg hover:bg-white/80 dark:hover:bg-slate-800"
+                              >
+                                Syllabus
+                              </button>
+                              <button
+                                onClick={() => onRemovePlanCourse(course.id)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                title="Remove course"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -512,49 +572,79 @@ export const SemesterPlanner: React.FC<SemesterPlannerProps> = ({
                       <span>{selectedCourses.filter(c => c.type === 'Elective').reduce((s, c) => s + c.credits, 0)} Units</span>
                     </div>
                     <div className="space-y-2">
-                      {selectedCourses.filter(c => c.type === 'Elective').map((course, idx) => (
-                        <div
-                          key={course.id}
-                          className="p-3.5 rounded-xl bg-cyan-50/40 dark:bg-cyan-950/20 border border-cyan-100 dark:border-cyan-900/50 flex items-center justify-between gap-4 text-xs"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-cyan-700 dark:text-cyan-300 font-bold flex items-center justify-center border border-cyan-200 dark:border-cyan-800 text-xs shadow-2xs">
-                              {idx + 1}
-                            </div>
-                            <div>
-                              <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                                <span className="font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 font-mono">{course.futMinnaCode || course.code}</span>
-                                {course.nucCcmasCode && (
-                                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">NUC: {course.nucCcmasCode}</span>
-                                )}
-                                <span className="text-[10px] font-bold text-cyan-800 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-200 dark:border-cyan-800">
-                                  Career Skill Elective
-                                </span>
-                                <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
-                              </div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                                {course.domain} • {course.credits} Elective Units • Skills: {course.skillsAcquired.slice(0, 2).join(', ')}
-                              </div>
-                            </div>
-                          </div>
+                      {selectedCourses.filter(c => c.type === 'Elective').map((course, idx) => {
+                        const isClashing = auditReport.clashedCourseIds.includes(course.id);
+                        const scheduleSlots = getCourseScheduleSlots(course);
 
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => onOpenSyllabusModal(course)}
-                              className="px-2.5 py-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-semibold rounded-lg hover:bg-white/80 dark:hover:bg-slate-800"
-                            >
-                              Syllabus
-                            </button>
-                            <button
-                              onClick={() => onRemovePlanCourse(course.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                              title="Remove course"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                        return (
+                          <div
+                            key={course.id}
+                            id={`enrolled-course-${course.id}`}
+                            className={`p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs transition-all ${
+                              isClashing
+                                ? 'bg-red-50/60 dark:bg-red-950/30 border-red-300 dark:border-red-800 ring-1 ring-red-400/40 shadow-xs'
+                                : 'bg-cyan-50/40 dark:bg-cyan-950/20 border-cyan-100 dark:border-cyan-900/50'
+                            }`}
+                          >
+                            <div className="flex items-start space-x-3">
+                              <div className={`w-7 h-7 rounded-lg font-bold flex items-center justify-center border text-xs shadow-2xs shrink-0 mt-0.5 ${
+                                isClashing
+                                  ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-300'
+                                  : 'bg-white dark:bg-slate-800 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800'
+                              }`}>
+                                {idx + 1}
+                              </div>
+                              <div>
+                                <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                                  <span className="font-bold text-blue-700 dark:text-blue-300 bg-blue-100/80 dark:bg-blue-900/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 font-mono">{course.futMinnaCode || course.code}</span>
+                                  {course.nucCcmasCode && (
+                                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-mono">NUC: {course.nucCcmasCode}</span>
+                                  )}
+                                  <span className="text-[10px] font-bold text-cyan-800 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-200 dark:border-cyan-800">
+                                    Career Skill Elective
+                                  </span>
+                                  {isClashing && (
+                                    <span className="text-[10px] font-black text-white bg-red-600 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                                      <AlertTriangle className="w-2.5 h-2.5" />
+                                      <span>Schedule Clash</span>
+                                    </span>
+                                  )}
+                                  <h4 className="font-bold text-slate-900 dark:text-white text-xs">{course.name}</h4>
+                                </div>
+
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium flex items-center flex-wrap gap-x-2 gap-y-1">
+                                  <span>{course.domain}</span>
+                                  <span>•</span>
+                                  <span>{course.credits} Elective Units</span>
+                                  <span>•</span>
+                                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300 font-semibold">
+                                    <Clock className="w-3 h-3 text-slate-400" />
+                                    <span>
+                                      {scheduleSlots.map(s => `${s.day.slice(0, 3)} ${s.startTime}`).join(', ')}
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2 self-end sm:self-center shrink-0">
+                              <button
+                                onClick={() => onOpenSyllabusModal(course)}
+                                className="px-2.5 py-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-semibold rounded-lg hover:bg-white/80 dark:hover:bg-slate-800"
+                              >
+                                Syllabus
+                              </button>
+                              <button
+                                onClick={() => onRemovePlanCourse(course.id)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                                title="Remove course"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

@@ -35,6 +35,7 @@ interface HeaderProps {
   onOpenDatabaseExport?: () => void;
   onOpenSiwesPortal?: () => void;
   onOpenCompliance?: () => void;
+  onOpenIntroPage?: () => void;
   currentUser: User | null;
   selectedPlanCount: number;
   totalCredits: number;
@@ -54,6 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenDatabaseExport,
   onOpenSiwesPortal,
   onOpenCompliance,
+  onOpenIntroPage,
   currentUser,
   selectedPlanCount,
   totalCredits,
@@ -180,6 +182,19 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Packaged Action Toolbar (Clean, properly fitted, and aligned with no overflow) */}
             <div className="flex items-center space-x-2 shrink-0">
+
+              {/* Intro Page & Purpose Trigger Button */}
+              {onOpenIntroPage && (
+                <button
+                  id="btn-open-intro-page"
+                  onClick={onOpenIntroPage}
+                  className="bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 dark:from-slate-800 dark:to-slate-800/90 dark:hover:from-slate-700 dark:hover:to-slate-700/90 text-blue-700 dark:text-cyan-300 border border-blue-200/80 dark:border-slate-700 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-2xs min-h-[36px] flex items-center space-x-1.5 shrink-0"
+                  title="Open App Overview & Introductory Guide"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
+                  <span className="hidden sm:inline">Intro & Purpose</span>
+                </button>
+              )}
 
               {/* Profile Setup Trigger Button */}
               <button
@@ -361,6 +376,26 @@ export const Header: React.FC<HeaderProps> = ({
                           <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">SQL, JSON & schemas for project reports</span>
                         </div>
                       </button>
+
+                      {/* App Intro & Overview */}
+                      {onOpenIntroPage && (
+                        <button
+                          id="dropdown-item-intro-page"
+                          onClick={() => {
+                            setIsToolsDropdownOpen(false);
+                            onOpenIntroPage();
+                          }}
+                          className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-colors"
+                        >
+                          <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                            <Sparkles className="w-3.5 h-3.5" />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="block font-bold text-slate-900 dark:text-white truncate">App Intro & Purpose</span>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">Visual overview, purpose & quick personas</span>
+                          </div>
+                        </button>
+                      )}
 
                       {/* App Walkthrough Tour */}
                       <button

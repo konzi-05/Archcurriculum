@@ -31,12 +31,19 @@ import { DatabaseExportModal } from './components/DatabaseExportModal';
 import { ProgrammeRulesModal } from './components/ProgrammeRulesModal';
 import { SiwesPortalModal } from './components/SiwesPortalModal';
 import { ComplianceModal } from './components/ComplianceModal';
+import { IntroductoryPage } from './components/IntroductoryPage';
 import { BTECH_IT_COURSES } from './data/btechItCurriculum';
 
 export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('app-theme');
     return (saved === 'dark' || saved === 'light') ? saved : 'light';
+  });
+
+  // Introductory Landing View state (default to true on initial visit, can be toggled)
+  const [isIntroPageVisible, setIsIntroPageVisible] = useState<boolean>(() => {
+    const hasVisited = sessionStorage.getItem('curriculum_architect_visited');
+    return !hasVisited;
   });
 
   // Firebase Auth & Cloud Sync state
@@ -242,6 +249,54 @@ export default function App() {
     }
   };
 
+  const handleEnterApp = () => {
+    sessionStorage.setItem('curriculum_architect_visited', 'true');
+    setIsIntroPageVisible(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectIntroPersona = (persona: Partial<StudentProfile>) => {
+    handleSaveProfile({ ...studentProfile, ...persona });
+    sessionStorage.setItem('curriculum_architect_visited', 'true');
+    setIsIntroPageVisible(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  if (isIntroPageVisible) {
+    return (
+      <div className="min-h-screen">
+        <IntroductoryPage
+          onEnterApp={handleEnterApp}
+          onSelectPersona={handleSelectIntroPersona}
+          onOpenWalkthrough={() => setIsWalkthroughModalOpen(true)}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          programmeRules={programmeRules}
+        />
+
+        {isWalkthroughModalOpen && (
+          <WelcomeWalkthroughModal
+            onClose={() => setIsWalkthroughModalOpen(false)}
+            onOpenProfile={() => {
+              setIsWalkthroughModalOpen(false);
+              setIsIntroPageVisible(false);
+              setIsProfileModalOpen(true);
+            }}
+            onOpenCounselor={() => {
+              setIsWalkthroughModalOpen(false);
+              setIsIntroPageVisible(false);
+              setIsCounselorModalOpen(true);
+            }}
+            onLoadDemoProfile={(demo) => {
+              handleSelectIntroPersona(demo);
+              setIsWalkthroughModalOpen(false);
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans selection:bg-blue-500 selection:text-white bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/50 via-slate-50 to-indigo-50/30 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 transition-colors duration-200">
       
@@ -258,6 +313,7 @@ export default function App() {
         onOpenDatabaseExport={() => setIsDatabaseExportModalOpen(true)}
         onOpenSiwesPortal={() => setIsSiwesPortalOpen(true)}
         onOpenCompliance={() => setIsComplianceModalOpen(true)}
+        onOpenIntroPage={() => setIsIntroPageVisible(true)}
         currentUser={currentUser}
         selectedPlanCount={selectedPlanCourseIds.length}
         totalCredits={recommendations.filter(r => selectedPlanCourseIds.includes(r.course.id)).reduce((sum, r) => sum + r.course.credits, 0)}

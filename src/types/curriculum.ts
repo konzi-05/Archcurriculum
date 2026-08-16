@@ -110,6 +110,65 @@ export interface Course {
   // SIWES Statutory Industrial Attachment Scheme Metadata
   isSiwesCourse?: boolean;
   siwesStructure?: SiwesStructure;
+  // Timetable & Scheduling
+  scheduleSlots?: CourseTimeSlot[];
+}
+
+export type TimetableDay = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
+
+export interface CourseTimeSlot {
+  id: string;
+  day: TimetableDay;
+  startTime: string; // e.g. "09:00"
+  endTime: string;   // e.g. "10:00"
+  slotLabel: string; // e.g. "09:00 - 10:00"
+  type: 'Lecture' | 'Lab' | 'Tutorial';
+  venue?: string;
+}
+
+export type ConflictSeverity = 'CRITICAL' | 'WARNING' | 'INFO';
+
+export type ConflictType = 
+  | 'TIME_SLOT_CLASH' 
+  | 'CROSS_SEMESTER_MISMATCH' 
+  | 'MULTI_SEMESTER_SPREAD'
+  | 'PREREQUISITE_CO_ENROLLMENT'
+  | 'DAILY_LAB_OVERLOAD';
+
+export interface ScheduleConflict {
+  id: string;
+  type: ConflictType;
+  severity: ConflictSeverity;
+  title: string;
+  description: string;
+  courseIds: string[];
+  courseCodes: string[];
+  day?: TimetableDay;
+  timeSlot?: string;
+  venue?: string;
+  semesterDiscrepancy?: {
+    activeSemester: number;
+    courseSemesters: Record<string, number>;
+  };
+  resolutionTip: string;
+}
+
+export interface ScheduleAuditReport {
+  hasConflicts: boolean;
+  totalConflicts: number;
+  criticalCount: number;
+  warningCount: number;
+  conflicts: ScheduleConflict[];
+  timeSlotClashes: ScheduleConflict[];
+  semesterMismatches: ScheduleConflict[];
+  prereqClashes: ScheduleConflict[];
+  clashedCourseIds: string[];
+  dayWorkloads: Record<TimetableDay, {
+    contactHours: number;
+    lectureCount: number;
+    labCount: number;
+    hasLabOverload: boolean;
+  }>;
 }
 
 export interface CompetencyRequirement {
