@@ -11,7 +11,11 @@ import {
   ShieldCheck,
   KeyRound,
   UserPlus,
-  LogIn
+  LogIn,
+  Copy,
+  Check,
+  ExternalLink,
+  AlertTriangle
 } from 'lucide-react';
 import {
   loginWithGoogle,
@@ -32,16 +36,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onOpenDatab
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isDomainError, setIsDomainError] = useState(false);
+  const [copiedDomain, setCopiedDomain] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const currentHostname = typeof window !== 'undefined' ? window.location.hostname : 'archcurriculum.vercel.app';
+
+  const copyDomainToClipboard = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(currentHostname);
+      setCopiedDomain(true);
+      setTimeout(() => setCopiedDomain(false), 2500);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setErrorMsg(null);
+    setIsDomainError(false);
     setLoading(true);
     try {
       await loginWithGoogle();
       onClose();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Google Authentication failed');
+      const msg = err.message || 'Google Authentication failed';
+      setErrorMsg(msg);
+      if (msg.includes('Domain Unauthorized') || msg.includes('auth/unauthorized-domain') || msg.includes('Authorized Domains')) {
+        setIsDomainError(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -49,17 +70,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onOpenDatab
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setErrorMsg('Please enter both email and password.');
+    const cleanEmail = email.trim();
+    const cleanPass = password.trim();
+
+    if (!cleanEmail || !cleanPass) {
+      setErrorMsg('Please enter both your email address and password.');
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setErrorMsg('Please enter a valid email address (e.g., student@gmail.com).');
+      return;
+    }
+
+    if (cleanPass.length < 6) {
+      setErrorMsg('Password must be at least 6 characters.');
+      return;
+    }
+
     setErrorMsg(null);
+    setIsDomainError(false);
     setLoading(true);
+
     try {
       if (mode === 'signin') {
-        await loginWithEmail(email, password);
+        await loginWithEmail(cleanEmail, cleanPass);
       } else {
-        await registerWithEmail(email, password);
+        await registerWithEmail(cleanEmail, cleanPass);
       }
       onClose();
     } catch (err: any) {
@@ -263,16 +301,72 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onOpenDatab
                 <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
               </div>
 
-              {/* Error Message Notice */}
+              {/* Error Message & Domain Guide */}
               {errorMsg && (
-                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs space-y-1.5">
+                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-800 text-amber-950 dark:text-amber-100 text-xs space-y-2.5">
                   <div className="font-bold flex items-center space-x-1.5 text-amber-800 dark:text-amber-300">
-                    <KeyRound className="w-4 h-4 shrink-0" />
-                    <span>Authentication Notice</span>
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>{isDomainError ? 'Firebase Domain Authorization Required' : 'Authentication Notice'}</span>
                   </div>
                   <p className="leading-relaxed opacity-95 text-[11px]">
                     {errorMsg}
                   </p>
+
+                  {/* Smart 1-click Switcher Action */}
+                  {mode === 'signin' && errorMsg.includes('Create New Account') && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode('signup'); setErrorMsg(null); }}
+                      className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center space-x-1.5 transition-colors shadow-xs"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>Switch to "Create New Account"</span>
+                    </button>
+                  )}
+
+                  {mode === 'signup' && errorMsg.includes('already registered') && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode('signin'); setErrorMsg(null); }}
+                      className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center space-x-1.5 transition-colors shadow-xs"
+                    >
+                      <LogIn className="w-3.5 h-3.5" />
+                      <span>Switch to "Sign In"</span>
+                    </button>
+                  )}
+
+                  {isDomainError && (
+                    <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-amber-200 dark:border-amber-800/80 space-y-2 text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">Domain to authorize:</span>
+                        <button
+                          type="button"
+                          onClick={copyDomainToClipboard}
+                          className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/60 hover:bg-amber-200 text-amber-800 dark:text-amber-200 font-mono text-[10px] flex items-center space-x-1 transition-colors"
+                          title="Copy domain to clipboard"
+                        >
+                          {copiedDomain ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                          <span>{copiedDomain ? 'Copied!' : 'Copy Domain'}</span>
+                        </button>
+                      </div>
+                      <div className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 p-1.5 rounded-md text-blue-700 dark:text-blue-300 truncate">
+                        {currentHostname}
+                      </div>
+
+                      <div className="pt-1 text-[10.5px] text-slate-600 dark:text-slate-400 space-y-1">
+                        <div className="font-semibold text-slate-800 dark:text-slate-200">How to authorize in 30 seconds:</div>
+                        <ol className="list-decimal pl-4 space-y-0.5">
+                          <li>Open <a href="https://console.firebase.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 underline font-medium inline-flex items-center gap-0.5">Firebase Console <ExternalLink className="w-2.5 h-2.5" /></a></li>
+                          <li>Go to <strong>Authentication</strong> &rarr; <strong>Settings</strong> &rarr; <strong>Authorized domains</strong></li>
+                          <li>Click <strong>Add domain</strong> and paste <code className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[10px]">{currentHostname}</code></li>
+                        </ol>
+                      </div>
+
+                      <div className="p-2 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 font-medium text-[11px]">
+                        💡 <strong>Quick tip:</strong> You can sign in right below with <strong>Email & Password</strong> or <strong>Guest Mode</strong> without needing to configure any domain!
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

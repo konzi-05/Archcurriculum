@@ -27,8 +27,10 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 // Initialize Auth
 export const auth = getAuth(app);
 
-// Initialize Firestore with custom databaseId
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Initialize Firestore (handles default database or custom database ID)
+export const db = (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)')
+  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+  : getFirestore(app);
 
 // Auth Providers
 const googleProvider = new GoogleAuthProvider();
@@ -57,22 +59,24 @@ export const loginWithGoogle = async () => {
 
 // Sign In with Email & Password
 export const loginWithEmail = async (email: string, pass: string) => {
+  const cleanEmail = email.trim();
+  const cleanPass = pass.trim();
   try {
-    const result = await signInWithEmailAndPassword(auth, email, pass);
+    const result = await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
     await syncUserProfile(result.user);
     return result.user;
   } catch (error: any) {
     if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-      throw new Error('Invalid email or password. If you don\'t have an account yet, switch to "Create New Account".');
+      throw new Error('Account not found or password incorrect. If this is your first time, please click "Create New Account" above.');
     }
     if (error.code === 'auth/invalid-email') {
-      throw new Error('Please enter a valid email address.');
+      throw new Error('Invalid email format. Please check for typos or extra spaces.');
     }
     if (error.code === 'auth/too-many-requests') {
-      throw new Error('Access temporarily restricted due to many failed attempts. Please try again later.');
+      throw new Error('Access temporarily restricted due to many failed attempts. Please try again in a few moments.');
     }
     if (error.code === 'auth/operation-not-allowed') {
-      throw new Error('Email/Password sign-in is not enabled in Firebase Console Authentication.');
+      throw new Error('Email/Password provider is not active on this Firebase project. You can continue seamlessly as a Guest Student.');
     }
     throw new Error(error.message || 'Failed to sign in.');
   }
@@ -80,22 +84,24 @@ export const loginWithEmail = async (email: string, pass: string) => {
 
 // Register with Email & Password
 export const registerWithEmail = async (email: string, pass: string) => {
+  const cleanEmail = email.trim();
+  const cleanPass = pass.trim();
   try {
-    const result = await createUserWithEmailAndPassword(auth, email, pass);
+    const result = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPass);
     await syncUserProfile(result.user);
     return result.user;
   } catch (error: any) {
     if (error.code === 'auth/email-already-in-use') {
-      throw new Error('This email is already registered. Please click "Already registered? Sign In" below.');
+      throw new Error('This email is already registered. Please switch to "Sign In" above.');
     }
     if (error.code === 'auth/weak-password') {
       throw new Error('Password must be at least 6 characters long.');
     }
     if (error.code === 'auth/invalid-email') {
-      throw new Error('Please enter a valid email address.');
+      throw new Error('Invalid email format. Please ensure you entered a standard email address like name@example.com.');
     }
     if (error.code === 'auth/operation-not-allowed') {
-      throw new Error('Email/Password registration is not enabled in Firebase Console Authentication.');
+      throw new Error('Email/Password registration is not enabled on this Firebase project. You can continue seamlessly as a Guest Student.');
     }
     throw new Error(error.message || 'Failed to create account.');
   }

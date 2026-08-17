@@ -1,12 +1,11 @@
 {
-  "projectId": "elevated-etching-g40ks",
-  "appId": "1:255075794554:web:4a6c2b782ab134d83205c3",
-  "apiKey": "AIzaSyBh-RXvKa9hamLjrdbrCAWawUdSVmz1Iw8",
-  "authDomain": "elevated-etching-g40ks.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-btechitcurriculu-284b15ea-80dc-4285-9d90-9fb47f08a2ac",
-  "storageBucket": "elevated-etching-g40ks.firebasestorage.app",
-  "messagingSenderId": "255075794554",
-  "measurementId": "",
-  "oAuthClientId": "255075794554-ets5qqvk23a00r1nk65vnk1v9bcjt9lq.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "projectId": "futminna-btech-it",
+  "appId": "1:394625221069:web:a0b17ab7316003e0e14484",
+  "apiKey": "AIzaSyBjME6rZRn8pfjJR9EC_pRQJkGA5_Tm_jQ",
+  "authDomain": "futminna-btech-it.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "futminna-btech-it.firebasestorage.app",
+  "messagingSenderId": "394625221069",
+  "measurementId": "G-0TCDFV29FW",
+  "databaseURL": "https://futminna-btech-it-default-rtdb.firebaseio.com"
 }
