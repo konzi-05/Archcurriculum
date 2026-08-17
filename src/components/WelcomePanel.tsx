@@ -91,7 +91,7 @@ export const WelcomePanel: React.FC<WelcomePanelProps> = ({
           <div className="space-y-5 sm:space-y-6">
             
             <p className="text-xs sm:text-sm text-indigo-100 max-w-3xl leading-relaxed">
-              Your intelligent guidance system for planning your 4-year B.Tech Information Technology degree. Select high-impact elective subjects, verify required course prerequisites, balance your study workload, and prepare for top-tier industry engineering roles.
+              A constraint-aware AI-assisted curriculum and career pathway recommender for B.Tech Information Technology students, incorporating prerequisite validation, curriculum compliance, career-skill alignment and workload-aware planning.
             </p>
 
             {/* Feature Walkthrough Cards (Horizontally scrollable on mobile/tablet, grid on desktop) */}

@@ -1,6 +1,6 @@
 {
   "name": "B.Tech IT Curriculum Recommender & Career Engine",
-  "description": "An advanced B.Tech Information Technology curriculum planning platform featuring hybrid recommendation algorithms, DAG prerequisite graphs, credit load balancing, career pathway alignment, and Gemini AI skill gap analysis.",
+  "description": "A constraint-aware AI-assisted curriculum and career pathway recommender for B.Tech Information Technology students, incorporating prerequisite validation, curriculum compliance, career-skill alignment and workload-aware planning.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -175,10 +175,10 @@ export const WelcomeWalkthroughModal: React.FC<WelcomeWalkthroughModalProps> = (
               <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 space-y-4 shadow-xs">
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
                   <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <span>AICTE Model Curriculum & Prerequisite Engine</span>
+                  <span>Production-Deployed Research Prototype</span>
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  <strong>Curriculum Architect</strong> is designed specifically for B.Tech Information Technology undergraduates, academic advisors, and curriculum heads. It simplifies course selection, degree planning, and skill development by applying strict AICTE Credit Safety Rules and Prerequisite DAG Graph validation.
+                  <strong>Curriculum Architect</strong> is a constraint-aware AI-assisted curriculum and career pathway recommender for B.Tech Information Technology students, incorporating prerequisite validation, curriculum compliance, career-skill alignment and workload-aware planning.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                   <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-1">

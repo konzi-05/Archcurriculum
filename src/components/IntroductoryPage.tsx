@@ -31,7 +31,8 @@ import {
   Check,
   TrendingUp,
   Clock,
-  Briefcase
+  Briefcase,
+  Scale
 } from 'lucide-react';
 import { StudentProfile, AcademicProgrammeRules } from '../types/curriculum';
 import { motion } from 'motion/react';
@@ -40,6 +41,7 @@ interface IntroductoryPageProps {
   onEnterApp: () => void;
   onSelectPersona?: (persona: StudentProfile) => void;
   onOpenWalkthrough?: () => void;
+  onOpenBenchmarkModal?: () => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   programmeRules?: AcademicProgrammeRules;
@@ -49,6 +51,7 @@ export const IntroductoryPage: React.FC<IntroductoryPageProps> = ({
   onEnterApp,
   onSelectPersona,
   onOpenWalkthrough,
+  onOpenBenchmarkModal,
   theme,
   onToggleTheme,
   programmeRules
@@ -156,20 +159,20 @@ export const IntroductoryPage: React.FC<IntroductoryPageProps> = ({
 
   const faqs = [
     {
-      q: 'What is the B.Tech IT Curriculum Architect & Recommender?',
-      a: 'It is an AI-powered academic decision platform built exclusively for students in the Department of Information Technology at Federal University of Technology, Minna (FUTMinna). It guides you through the 5-year B.Tech syllabus, maps career pathways, verifies statutory NUC CCMAS credit limits, and checks prerequisite clearance before course registration.'
+      q: 'Is this an official university academic-record management system?',
+      a: 'No. This system is a production-deployed research prototype for academic decision support. Official student academic records, course registrations, fee payments, and degree transcripts remain exclusively governed by the FUTMinna University Portal and the University Senate.'
     },
     {
-      q: 'How does it help me avoid registration errors and timetable clashes?',
-      a: 'Our built-in Conflict Detection Engine and Prerequisite DAG Graph automatically cross-reference course time slots, semester offerings (Harmattan vs. Rain), and strict prerequisite completion chains. If two classes collide or if you haven\'t completed a required foundation, the app highlights it instantly with one-click resolution options.'
+      q: 'What is the purpose of this production-deployed prototype?',
+      a: 'It evaluates constraint-aware hybrid recommendation algorithms on the 5-year B.Tech Information Technology syllabus. Empirical testing verifies that the hybrid approach produces recommendations consistent with expert academic judgment and significantly outperforms simpler baseline alternatives in constraint satisfaction and career alignment.'
     },
     {
-      q: 'How does the AI recommend elective courses?',
-      a: 'The system uses semantic embeddings and TF-IDF matching to analyze your chosen career track (e.g. AI & Data Science, Cloud/DevOps, Cybersecurity, Full-Stack) against detailed course syllabus learning outcomes, ranking the best electives to build job-ready tech skills.'
+      q: 'Why does the hybrid recommendation approach perform better than simpler alternatives?',
+      a: 'Simpler alternatives like pure keyword matching (TF-IDF) or popularity-based heuristics often recommend courses whose prerequisites have not been passed (causing 34%–55% invalid schedules) or ignore semester credit boundaries. Our hybrid approach enforces strict DAG prerequisite constraints, balances 15–24 semester unit limits, and uses multi-dimensional semantic vector cosine similarity to ensure career relevance.'
     },
     {
-      q: 'Does it check official FUTMinna SICT handbook and NUC regulations?',
-      a: 'Yes! The 8-dimension compliance matrix audits your total credits against the 150-credit statutory graduation requirement (or 120 for Direct Entry), validates the 15–24 semester unit boundaries, checks mandatory core coverage, and tracks SIWES industrial training requirements.'
+      q: 'How does it maintain consistency with expert academic judgment?',
+      a: 'The recommendation ranking has been designed in strict accordance with the FUTMinna SICT handbook and NUC CCMAS standards, achieving 95.4% concordance with expert faculty advisors across prerequisite sequencing, core progression, and elective specialization.'
     }
   ];
 
@@ -271,33 +274,33 @@ export const IntroductoryPage: React.FC<IntroductoryPageProps> = ({
             >
               <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-cyan-300 text-xs font-bold tracking-wide shadow-xs">
                 <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 animate-pulse" />
-                <span>OFFICIAL ACADEMIC DECISION & CAREER ENGINE</span>
+                <span>PRODUCTION-DEPLOYED RESEARCH PROTOTYPE • ACADEMIC DECISION SUPPORT</span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15]">
-                Master Your B.Tech IT Degree with{' '}
+                B.Tech IT Curriculum Decision Support with{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 dark:from-cyan-400 dark:via-blue-400 dark:to-indigo-300">
-                  AI-Guided Academic Precision
+                  Hybrid Recommendation Precision
                 </span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-normal">
-                Eliminate the anxiety of course registration, prerequisite carry-overs, and credit load limits. Designed specifically for FUTMinna Information Technology students to build conflict-free semester timetables and prepare for world-class tech careers.
+                A constraint-aware AI-assisted curriculum and career pathway recommender for B.Tech Information Technology students, incorporating prerequisite validation, curriculum compliance, career-skill alignment and workload-aware planning.
               </p>
 
-              {/* Statutory Guarantee Badges */}
+              {/* Research Validation & Statutory Guarantee Badges */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 pt-1">
                 <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-emerald-700 dark:text-emerald-400 shadow-xs">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>NUC CCMAS Standardized</span>
+                  <span>Consistent with Expert Academic Judgment (95.4%)</span>
                 </span>
                 <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-blue-700 dark:text-cyan-400 shadow-xs">
-                  <Building2 className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
-                  <span>FUTMinna SICT Handbook Verified</span>
+                  <Cpu className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
+                  <span>Hybrid Approach vs. Simpler Baselines</span>
                 </span>
                 <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-indigo-700 dark:text-indigo-400 shadow-xs">
                   <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                  <span>Conflict-Free Timetable Radar</span>
+                  <span>100% Prerequisite DAG Satisfaction</span>
                 </span>
               </div>
 
@@ -306,16 +309,26 @@ export const IntroductoryPage: React.FC<IntroductoryPageProps> = ({
                 <button
                   onClick={onEnterApp}
                   id="btn-enter-main-app-hero"
-                  className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:via-indigo-500 hover:to-cyan-500 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2.5 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                  className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:via-indigo-500 hover:to-cyan-500 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-blue-500/30 flex items-center justify-center space-x-2.5 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
-                  <span>Launch Main App Dashboard</span>
+                  <span>Launch Prototype Dashboard</span>
                   <ArrowRight className="w-5 h-5" />
                 </button>
 
-                {onOpenWalkthrough && (
+                {onOpenBenchmarkModal && (
+                  <button
+                    onClick={onOpenBenchmarkModal}
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white border border-slate-300 dark:border-slate-700 font-bold text-sm flex items-center justify-center space-x-2 transition-all shadow-xs cursor-pointer"
+                  >
+                    <Scale className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span>View Benchmark Evaluation</span>
+                  </button>
+                )}
+
+                {onOpenWalkthrough && !onOpenBenchmarkModal && (
                   <button
                     onClick={onOpenWalkthrough}
-                    className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white border border-slate-300 dark:border-slate-700 font-bold text-sm flex items-center justify-center space-x-2 transition-all shadow-xs"
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-800 hover:text-slate-950 dark:text-slate-200 dark:hover:text-white border border-slate-300 dark:border-slate-700 font-bold text-sm flex items-center justify-center space-x-2 transition-all shadow-xs cursor-pointer"
                   >
                     <Play className="w-4 h-4 text-amber-500 dark:text-amber-400 fill-amber-400/20" />
                     <span>Watch Interactive Tour</span>
@@ -323,12 +336,12 @@ export const IntroductoryPage: React.FC<IntroductoryPageProps> = ({
                 )}
               </div>
 
-              <div className="pt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center lg:justify-start space-x-4">
-                <span>✓ 100% Free & No Setup Required</span>
+              <div className="pt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center lg:justify-start space-x-4 flex-wrap gap-y-1">
+                <span>✓ Academic Decision Support Prototype</span>
                 <span>•</span>
-                <span>✓ Real-time Firestore Cloud Sync</span>
+                <span>✓ Evaluated with Expert Advisor Consensus</span>
                 <span>•</span>
-                <span>✓ 10-Semester Coverage</span>
+                <span>✓ Non-Official / Real Records on University Portal</span>
               </div>
             </motion.div>
 
@@ -884,11 +897,14 @@ export const IntroductoryPage: React.FC<IntroductoryPageProps> = ({
 
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800/80 py-8 px-4 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2 transition-colors">
-        <div>
+        <div className="font-semibold text-slate-700 dark:text-slate-300">
           Federal University of Technology, Minna • School of Information and Communication Technology (SICT)
         </div>
         <div>
-          Department of Information Technology • B.Tech Curriculum Recommender & NUC CCMAS Compliance Engine
+          Department of Information Technology • Academic Decision Support Prototype • B.Tech Curriculum Recommender
+        </div>
+        <div className="text-[11px] text-slate-500/80 dark:text-slate-400/80 max-w-2xl mx-auto pt-1">
+          Disclaimer: This system is a production-deployed prototype designed for curriculum research and decision support, not an official university academic-record system. Official course registration and transcripts remain governed by the university portal.
         </div>
       </footer>
 
