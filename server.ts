@@ -176,44 +176,80 @@ Generate a comprehensive academic insight report in JSON format matching the sch
 
 function generateGroundedFallbackResponse(userQuery: string, profile: any, ragContext: any): string {
   const name = profile?.name || 'Student';
-  const sem = profile?.currentSemester || 5;
+  const sem = profile?.currentSemester || 1;
+  const level = `${Math.ceil(sem / 2) * 100}L`;
   const targetTrack = ragContext.targetCareerTrack;
   const retrieved = ragContext.retrievedCourses || [];
+  const completedCount = profile?.completedCourseIds?.length || 0;
 
   if (retrieved.length > 0) {
     const topCourse = retrieved[0].course;
     const topEvidence = retrieved[0];
     const prereqNote = topEvidence.prerequisitesMet 
-      ? `You have satisfied all prerequisites (${topCourse.prerequisites.length > 0 ? topCourse.prerequisites.join(', ') : 'None required'}), making you fully eligible to enroll!`
-      : `Note: You still need to complete ${topEvidence.missingPrerequisiteCourses.map((m: any) => `${m.id} (${m.name})`).join(', ')} before taking this course.`;
+      ? `✅ **Prerequisites Verified:** You have satisfied all prerequisites (${topCourse.prerequisites.length > 0 ? topCourse.prerequisites.map((p: string) => `[${p}]`).join(', ') : 'Open Course'}), making you fully eligible to enroll in **[${topCourse.code || topCourse.id}] ${topCourse.name}**.`
+      : `⚠️ **Prerequisite Prerequisite Warning:** You must complete and pass **${topEvidence.missingPrerequisiteCourses.map((m: any) => `[${m.code || m.id}] ${m.name}`).join(', ')}** before enrolling in **[${topCourse.code || topCourse.id}] ${topCourse.name}**.`;
 
-    const courseBulletList = retrieved.slice(0, 3).map((item: any) => {
+    const courseBreakdown = retrieved.slice(0, 4).map((item: any, idx: number) => {
       const c = item.course;
-      const statusStr = item.prerequisitesMet ? '✅ Ready to Take' : '⚠️ Prerequisite Needed';
-      return `• **[${c.id}] ${c.name}** (${c.credits} Credits, Semester ${c.semester})\n  - Domain: ${c.domain} | Bloom Level: ${c.bloomLevel}\n  - Status: ${statusStr}\n  - Key Syllabus: ${c.syllabus.slice(0, 2).join(', ')}`;
+      const statusIcon = item.prerequisitesMet ? '✅ Eligible' : '⚠️ Prerequisite Required';
+      const prereqList = c.prerequisites.length > 0 ? c.prerequisites.join(', ') : 'None (Open Enrollment)';
+      return `### ${idx + 1}. [${c.code || c.id}] ${c.name} (${c.credits} Credit Units)
+- **Academic Domain & Level:** ${c.domain} • ${c.academicLevel || level} (Semester ${c.semester})
+- **Classification:** ${c.type} Course | **Workload:** ~${c.workloadHours || 4} hrs/week (Lecture: ${c.lectureHours}h, Lab: ${c.practicalHours}h)
+- **Prerequisite Status:** ${statusIcon} — Required: *${prereqList}*
+- **Key Modules & Topics:** ${c.syllabus.slice(0, 3).join('; ')}
+- **Industry Competencies Gained:** ${c.skillsAcquired.slice(0, 4).join(', ')}`;
     }).join('\n\n');
 
-    return `Hello ${name}! Here is guidance grounded in your live B.Tech IT curriculum dataset for **${targetTrack.title}** (${targetTrack.targetRole}):\n\n${courseBulletList}\n\n**Academic Advice for Semester ${sem}:**\n${prereqNote}\n\nFocusing on these courses directly bridges key skills for **${targetTrack.targetRole}**, including ${topCourse.skillsAcquired.slice(0, 3).join(', ')}.`;
+    return `### Academic & Career Guidance for ${name}
+**Standing:** ${level} (Semester ${sem}) • **Target Pathway:** ${targetTrack.title} (${targetTrack.targetRole}) • **Completed Courses:** ${completedCount} passed
+
+---
+
+#### 1. Strategic Curriculum Recommendation
+Based on your academic standing and target career as a **${targetTrack.targetRole}**, here is your course evaluation:
+
+${courseBreakdown}
+
+---
+
+#### 2. Prerequisite & Workload Audit
+${prereqNote}
+- **Weekly Budget Analysis:** With your allocated **${profile.weeklyStudyHoursBudget || 25} hrs/week** budget, ensure you do not exceed 24 total credit units to maintain strong performance.
+- **Skill Alignment:** These courses bridge critical competencies for **${targetTrack.targetRole}**, specifically in *${targetTrack.keySkills.slice(0, 3).join(', ')}*.
+
+---
+
+#### 3. Actionable Academic Steps
+1. Enroll in verified eligible courses during registration window.
+2. If pursuing SIWES attachment (300L/400L), ensure all core foundational programming and database prerequisites are cleared.
+3. Build hands-on project artifacts aligned with course laboratory modules to strengthen your technical portfolio.`;
   }
 
-  return `Hello ${name}! As a Semester ${sem} B.Tech IT student pursuing ${targetTrack.title}, align your course schedule to balance core departmental requirements with high-match track electives.`;
+  return `### Academic Guidance for ${name}
+**Standing:** ${level} (Semester ${sem}) • **Target Pathway:** ${targetTrack.title} (${targetTrack.targetRole})
+
+To optimize your B.Tech Information Technology degree progression:
+- **Workload Balance:** Maintain a semester course load between 15 and 24 credit units.
+- **Prerequisite Verification:** Verify that all foundational 100L/200L core courses (Calculus, Data Structures, Discrete Math, Database Systems) are passed before enrolling in higher-level electives.
+- **Career Preparation:** Select electives that develop competencies in *${targetTrack.keySkills.join(', ')}*.`;
 }
 
   // Interactive AI Counselor Q&A Endpoint with Live Curriculum RAG Grounding
   app.post('/api/counselor/chat', async (req, res) => {
     try {
-      const { userQuery, profile } = req.body;
+      const { userQuery, profile, chatHistory } = req.body;
       if (!userQuery) {
         return res.status(400).json({ error: 'Query parameter required' });
       }
 
       const defaultProfile = {
         name: 'Student',
-        currentSemester: 5,
-        targetCareerTrackId: 'ai-ml',
-        completedCourseIds: ['CS101', 'CS102', 'CS201', 'CS202', 'CS301', 'CS302', 'CS303', 'CS401', 'CS402'],
-        preferredPace: 'balanced',
-        weeklyStudyHoursBudget: 20
+        currentSemester: 1,
+        targetCareerTrackId: 'software_engineer',
+        completedCourseIds: [],
+        preferredPace: 'Balanced',
+        weeklyStudyHoursBudget: 25
       };
 
       const activeProfile = { ...defaultProfile, ...(profile || {}) };
@@ -222,25 +258,35 @@ function generateGroundedFallbackResponse(userQuery: string, profile: any, ragCo
       if (process.env.GEMINI_API_KEY) {
         try {
           const ai = getGeminiClient();
-          const prompt = `
-Student Query: "${userQuery}"
 
+          // Construct chat dialogue history if available
+          let formattedHistory = '';
+          if (Array.isArray(chatHistory) && chatHistory.length > 0) {
+            formattedHistory = `\n=== RECENT CONVERSATION HISTORY ===\n` + 
+              chatHistory.slice(-6).map((m: any) => `${m.sender === 'user' ? 'Student' : 'Counselor'}: ${m.text}`).join('\n') + '\n';
+          }
+
+          const prompt = `
+Student Question/Request: "${userQuery}"
+
+${formattedHistory}
 ${ragContext.groundedPromptDossier}
 
-INSTRUCTIONS FOR COUNSELOR RESPONSE:
-1. Provide a direct, highly helpful, and encouraging academic guidance response to the student's question.
-2. Ground your answer explicitly in the retrieved course source documents from the official B.Tech IT curriculum dataset provided above.
-3. Cite course codes in brackets, e.g., [CS502] Cloud Computing & Virtualization, whenever discussing subjects.
-4. If discussing prerequisites, verify against the student's completed courses and state clearly whether prerequisites are satisfied or what required course is missing.
-5. Reference specific syllabus topics and practical skills taught in the course modules.
-6. Provide actionable advice for balancing their weekly study hours and preparing for industry roles.
+MANDATORY INSTRUCTIONS FOR THE ACADEMIC COUNSELOR:
+1. Provide a direct, highly specific, and authoritative academic guidance response tailored strictly to this student's exact profile and transcript.
+2. NEVER give generic, vague, or boilerplate answers. Do not say generic things like "work hard" or "study regularly" without naming exact courses and syllabus modules.
+3. ALWAYS cite exact course codes in brackets, e.g. [MTH 111], [CPT 312], [IFT 311], [CS501], [CS502] whenever discussing courses.
+4. For every course discussed, check the student's completed courses list and state explicitly whether their prerequisites are satisfied or what specific prerequisite courses are missing.
+5. Reference specific syllabus units, practical tools, and learning outcomes taught in the modules.
+6. Provide concrete advice regarding semester unit limits (15-24 units), weekly study workload balancing, and preparation for their target career role (${ragContext.targetCareerTrack.targetRole}).
+7. Format your response cleanly using Markdown headings, bold text, and bullet points.
 `;
 
           const response = await ai.models.generateContent({
             model: 'gemini-3.7-flash',
             contents: prompt,
             config: {
-              systemInstruction: 'You are the Chief Academic Counselor for B.Tech Information Technology degrees. Your responses are grounded in real-time in the official B.Tech IT curriculum dataset (RAG). Give clear, direct, and actionable academic guidance citing accurate course codes and prerequisites.',
+              systemInstruction: `You are the Chief Academic Counselor & Curriculum Specialist for the Department of Information Technology, School of Information and Communication Technology (SICT) at the Federal University of Technology, Minna (FUT Minna). You provide concrete, constraint-aware, prerequisite-verified, and career-aligned academic advice grounded in the official B.Tech IT curriculum dataset. You cite exact course codes, prerequisite rules, and syllabus details.`,
             }
           });
 
@@ -269,8 +315,8 @@ INSTRUCTIONS FOR COUNSELOR RESPONSE:
       });
     } catch (err: any) {
       console.error('Counselor chat error:', err);
-      const fallbackProfile = req.body?.profile || { name: 'Student', currentSemester: 5, targetCareerTrackId: 'ai-ml', completedCourseIds: [] };
-      const fallbackRag = retrieveGroundedCurriculumContext(req.body?.userQuery || '', fallbackProfile, 3);
+      const fallbackProfile = req.body?.profile || { name: 'Student', currentSemester: 1, targetCareerTrackId: 'software_engineer', completedCourseIds: [] };
+      const fallbackRag = retrieveGroundedCurriculumContext(req.body?.userQuery || '', fallbackProfile, 4);
       const fallbackText = generateGroundedFallbackResponse(req.body?.userQuery || '', fallbackProfile, fallbackRag);
       res.json({
         responseText: fallbackText,

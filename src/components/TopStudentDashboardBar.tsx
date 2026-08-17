@@ -148,15 +148,15 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
               className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-extrabold text-sm sm:text-base flex items-center justify-center shadow-xs border border-blue-400/30 hover:scale-105 transition-transform shrink-0 cursor-pointer"
               title="Edit Profile & Preferences"
             >
-              {studentProfile.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+              {(studentProfile.name || 'Student').trim().split(/\s+/).map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'ST'}
             </button>
             <div className="min-w-0">
               <div className="flex items-center space-x-2 flex-wrap">
                 <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white tracking-tight truncate">
-                  {studentProfile.name}
+                  {studentProfile.name || 'New Student'}
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 font-mono shrink-0">
-                  {studentProfile.rollNumber || '21IT1084'}
+                  {studentProfile.rollNumber || 'Unassigned'}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">

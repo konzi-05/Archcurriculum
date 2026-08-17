@@ -36,11 +36,15 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({
   onSelectCourse,
   onClose 
 }) => {
+  const studentName = profile.name || 'Student';
+  const semesterLevel = `${Math.ceil(profile.currentSemester / 2) * 100}L`;
+  const completedCount = profile.completedCourseIds?.length || 0;
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
       sender: 'ai',
-      text: `Hello ${profile.name}! I am your **Academic & Career Advisor**, grounded in real-time with the official **AICTE B.Tech Information Technology curriculum catalog (RAG Engine)**.\n\nAsk me about course prerequisites, elective recommendations, syllabus topics, or preparation strategies for your target role!`,
+      text: `Hello ${studentName}! I am your **B.Tech IT Academic & Career Counselor**, grounded in real-time with the official **SICT / NUC CCMAS curriculum catalog (RAG Engine)**.\n\nI have loaded your profile (**${semesterLevel} • Semester ${profile.currentSemester}**, **${completedCount} courses completed**). Ask me about course prerequisites, elective recommendations, syllabus topics, SIWES training, or career preparation for your target role!`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       ragGroundingActive: true
     }
@@ -72,11 +76,12 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({
     return () => unsubscribe();
   }, [currentUser]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputQuery.trim() || isLoading) return;
+  const handleSendMessage = async (e: React.FormEvent, customQuery?: string) => {
+    if (e) e.preventDefault();
+    const queryToSend = customQuery || inputQuery;
+    if (!queryToSend.trim() || isLoading) return;
 
-    const userText = inputQuery.trim();
+    const userText = queryToSend.trim();
     setInputQuery('');
 
     const userMsg: ChatMessage = {
@@ -95,10 +100,20 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({
     setIsLoading(true);
 
     try {
+      // Build recent history for context
+      const chatHistory = newMsgsWithUser.slice(-6).map(m => ({
+        sender: m.sender,
+        text: m.text
+      }));
+
       const res = await fetch('/api/counselor/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userQuery: userText, profile })
+        body: JSON.stringify({ 
+          userQuery: userText, 
+          profile,
+          chatHistory 
+        })
       });
 
       const data = await res.json();
@@ -142,11 +157,11 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({
   };
 
   const sampleQueries = [
-    "What electives in Semester 5-6 prepare for Cloud & DevOps?",
-    "Do I meet the prerequisites for Machine Learning CS501?",
-    "Compare Big Data Analytics CS503 vs Cloud Computing CS502",
-    "What are the exact prerequisites for Distributed Systems CS601?",
-    "Which Semester 6 electives teach Docker, Kubernetes, or PyTorch?"
+    `What electives in Semester ${profile.currentSemester} best fit my career track?`,
+    "Audit my prerequisites for advanced computing electives",
+    "How does the mandatory 6-month SIWES industrial training work?",
+    "How do I balance credit units without overloading my study hours?",
+    "Which courses teach hands-on industry frameworks and tools?"
   ];
 
   return (
@@ -359,8 +374,8 @@ export const AiCounselorModal: React.FC<AiCounselorModalProps> = ({
           {sampleQueries.map((q, idx) => (
             <button
               key={idx}
-              onClick={() => setInputQuery(q)}
-              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap transition-all shadow-2xs font-medium text-[11px]"
+              onClick={(e) => handleSendMessage(e as any, q)}
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap transition-all shadow-2xs font-medium text-[11px] cursor-pointer"
             >
               {q}
             </button>

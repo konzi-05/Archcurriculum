@@ -163,36 +163,53 @@ export function retrieveGroundedCurriculumContext(
   // Completed course codes list
   const completedCourseCodes = BTECH_IT_COURSES
     .filter(c => completedSet.has(c.id))
-    .map(c => `${c.id} (${c.name})`);
+    .map(c => `[${c.code || c.id}] ${c.name}`);
 
   // Build Grounded Prompt Dossier
   const dossierLines: string[] = [
-    `=== GROUNDED CURRICULUM KNOWLEDGE BASE (OFFICIAL B.TECH IT DATASET) ===`,
-    `Target Career Track: ${targetTrack.title} -> Role: ${targetTrack.targetRole}`,
-    `Track Key Competencies: ${targetTrack.keySkills.join(', ')}`,
-    `Track Market Demand: ${targetTrack.industryDemand} Demand (Benchmark: ${targetTrack.averageSalaryUSD})`,
-    `Student Profile: ${profile.name}, Semester ${profile.currentSemester}, Weekly Budget: ${profile.weeklyStudyHoursBudget}h`,
-    `Student Completed Courses (${completedCourseCodes.length}): ${completedCourseCodes.join('; ')}`,
+    `=== INSTITUTIONAL FRAMEWORK & PROGRAMME GUIDELINES ===`,
+    `Institution: Federal University of Technology, Minna (FUT Minna)`,
+    `Faculty/School: School of Information and Communications Technology (SICT)`,
+    `Department: Department of Information Technology (B.Tech Information Technology)`,
+    `Curriculum Accreditation: NUC Computing CCMAS & IEEE/ACM IT2017 / CS2023 Guidelines`,
+    `Semester Workload Policy: Minimum 15 Units, Maximum 24 Units per semester (Dean approval required for overload up to 28 units)`,
+    `SIWES Attachment: Mandatory 6-month continuous industrial attachment in 400L (Rain Semester) / 300L SIWES scheme`,
+    `Graduation Target: 150 Credit Units (UTME) / 120 Credit Units (Direct Entry)`,
     ``,
-    `=== RETRIEVED COURSE EVIDENCE DOCUMENTS (${topEvidence.length} Relevant Modules) ===`
+    `=== STUDENT ACADEMIC PROFILE & TRANSCRIPT ===`,
+    `Student Name: ${profile.name || 'Student'}`,
+    `Current Standing: Semester ${profile.currentSemester} (${Math.ceil(profile.currentSemester / 2) * 100}L)`,
+    `Admission Mode: ${profile.entryMode === 'Direct_Entry' ? 'Direct Entry (200L Entry)' : 'UTME (100L Entry)'}`,
+    `Target Career Track: ${targetTrack.title} -> Target Role: ${targetTrack.targetRole}`,
+    `Weekly Study Hours Budget: ${profile.weeklyStudyHoursBudget || 25} hours/week (Pace: ${profile.preferredPace || 'Balanced'})`,
+    `Key Target Competencies: ${targetTrack.keySkills.join(', ')}`,
+    `Market Demand for Track: ${targetTrack.industryDemand} Demand (Benchmark: ${targetTrack.averageSalaryUSD})`,
+    `Student Completed Courses (${completedCourseCodes.length} passed): ${completedCourseCodes.length > 0 ? completedCourseCodes.join('; ') : 'No courses passed yet (Fresh Student)'}`,
+    ``,
+    `=== RETRIEVED GROUNDED COURSE EVIDENCE DOCUMENTS (${topEvidence.length} Modules) ===`
   ];
 
   topEvidence.forEach((item, idx) => {
     const c = item.course;
     const prereqStatus = c.prerequisites.length === 0
-      ? 'No Prerequisites (Open Entry)'
+      ? 'No Prerequisites (Open Enrollment)'
       : item.prerequisitesMet
         ? `Prerequisites SATISFIED [${c.prerequisites.join(', ')}]`
-        : `Prerequisites MISSING: Need to pass [${item.missingPrerequisiteCourses.map(m => `${m.id}: ${m.name}`).join(', ')}] first!`;
+        : `Prerequisites NOT MET: Student must pass [${item.missingPrerequisiteCourses.map(m => `[${m.code || m.id}] ${m.name}`).join(', ')}] before enrolling.`;
 
-    dossierLines.push(`[Source Document ${idx + 1}: ${c.id}]`);
-    dossierLines.push(`- Course Code & Name: ${c.code} - ${c.name}`);
-    dossierLines.push(`- Type: ${c.type} | Domain: ${c.domain} | Semester: ${c.semester} | Credits: ${c.credits} (AICTE compliant)`);
-    dossierLines.push(`- Difficulty: ${c.difficulty}/5 | Workload: ${c.workloadHours} hours/week | Bloom Level: ${c.bloomLevel}`);
-    dossierLines.push(`- Prerequisite Rule: ${prereqStatus}`);
+    dossierLines.push(`[Document ${idx + 1}: ${c.code || c.id}]`);
+    dossierLines.push(`- Course Code & Title: [${c.code || c.id}] ${c.name}`);
+    dossierLines.push(`- Level & Semester: ${c.academicLevel || `${Math.ceil(c.semester / 2) * 100}L`} • Semester ${c.semester} | Credit Units: ${c.credits} Units`);
+    dossierLines.push(`- Classification: ${c.type} | Academic Domain: ${c.domain}`);
+    dossierLines.push(`- Contact Hours: Lecture (LH): ${c.lectureHours || 2} hrs/wk | Practical (PH): ${c.practicalHours || 0} hrs/wk | Estimated Total Workload: ${c.workloadHours || 4} hrs/wk`);
+    dossierLines.push(`- Bloom Cognitive Level: ${c.bloomLevel || 'Apply'} | Technical Difficulty: ${c.difficulty}/5`);
+    dossierLines.push(`- Prerequisite Verification: ${prereqStatus}`);
     dossierLines.push(`- Official Syllabus Modules: ${c.syllabus.join('; ')}`);
-    dossierLines.push(`- Core Skills Acquired: ${c.skillsAcquired.join(', ')}`);
-    dossierLines.push(`- Catalog Description: ${c.description}`);
+    dossierLines.push(`- Core Skills & Tools Acquired: ${c.skillsAcquired.join(', ')}`);
+    if (c.learningOutcomes && c.learningOutcomes.length > 0) {
+      dossierLines.push(`- NUC Learning Outcomes: ${c.learningOutcomes.slice(0, 3).join('; ')}`);
+    }
+    dossierLines.push(`- Description: ${c.description}`);
     dossierLines.push(``);
   });
 
@@ -201,7 +218,7 @@ export function retrieveGroundedCurriculumContext(
     retrievedCourses: topEvidence,
     targetCareerTrack: targetTrack,
     studentContext: {
-      name: profile.name,
+      name: profile.name || 'Student',
       currentSemester: profile.currentSemester,
       completedCourseCount: completedCourseCodes.length,
       completedCourseCodes,
