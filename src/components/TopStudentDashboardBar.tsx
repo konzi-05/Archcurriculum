@@ -3,11 +3,12 @@ import { StudentProfile, CareerTrack, Course, AcademicProgrammeRules } from '../
 import { CAREER_TRACKS, BTECH_IT_COURSES } from '../data/btechItCurriculum';
 import { evaluateSiwesEligibility } from '../services/siwesEngine';
 import { evaluateCurriculumCompliance } from '../services/complianceEngine';
+import { GraduationCreditProgressSection } from './GraduationCreditProgressSection';
 import { 
   GraduationCap, Sparkles, SlidersHorizontal, BookOpen, 
   ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, 
   ShieldCheck, Bot, Clock, Award, Layers, User, ChevronDown, ChevronUp,
-  Cpu, ArrowRight, Zap, Target, Settings2, Building2
+  Cpu, ArrowRight, Zap, Target, Settings2, Building2, BarChart2
 } from 'lucide-react';
 
 interface TopStudentDashboardBarProps {
@@ -42,6 +43,8 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
       return false;
     }
   });
+
+  const [showGraduationAnalytics, setShowGraduationAnalytics] = useState<boolean>(false);
 
   const semesterScrollRef = useRef<HTMLDivElement>(null);
   const trackScrollRef = useRef<HTMLDivElement>(null);
@@ -246,6 +249,29 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
             </button>
           )}
 
+          {/* Graduation Requirement Progress Trigger */}
+          <button
+            onClick={() => setShowGraduationAnalytics(prev => !prev)}
+            className={`flex items-center space-x-2 px-2.5 sm:px-3 py-1.5 rounded-xl border text-left shrink-0 transition-all cursor-pointer ${
+              showGraduationAnalytics 
+                ? 'bg-blue-600 border-blue-600 text-white shadow-xs' 
+                : 'bg-blue-50/90 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200 hover:bg-blue-100'
+            }`}
+            title="View Graduation Credit Requirement Recharts Analytics"
+          >
+            <div className={`p-1 rounded-md shrink-0 ${showGraduationAnalytics ? 'bg-white/20 text-white' : 'bg-blue-600 text-white'}`}>
+              <GraduationCap className="w-3 h-3" />
+            </div>
+            <div>
+              <span className={`text-[9px] uppercase tracking-wider font-bold block leading-none ${showGraduationAnalytics ? 'text-blue-100' : 'text-blue-600 dark:text-blue-400'}`}>
+                Graduation Units
+              </span>
+              <span className="text-xs font-bold leading-tight flex items-center gap-1">
+                <span>{degreeProgressPercent}% ({completedCredits + totalPlannedCredits}/{totalDegreeCredits})</span>
+              </span>
+            </div>
+          </button>
+
           {/* Active Target Career Badge */}
           <div className="flex items-center space-x-2 bg-indigo-50/80 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/80 px-2.5 sm:px-3 py-1.5 rounded-xl shrink-0">
             <Target className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
@@ -394,15 +420,24 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 overflow-x-auto pb-1 sm:pb-0"
           >
             
-            {/* Metric 1: Degree Credit Progress */}
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2">
+            {/* Metric 1: Degree Credit Progress (Interactive Trigger) */}
+            <div 
+              onClick={() => setShowGraduationAnalytics(prev => !prev)}
+              className={`p-3.5 sm:p-4 rounded-2xl border space-y-2 transition-all cursor-pointer ${
+                showGraduationAnalytics
+                  ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 shadow-2xs'
+                  : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/80 hover:border-blue-300 dark:hover:border-blue-700'
+              }`}
+              title="Click to view Recharts Graduation Credit Requirement Analytics"
+            >
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-slate-600 dark:text-slate-400 flex items-center space-x-1.5">
                   <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   <span>Degree Units</span>
                 </span>
-                <span className="font-extrabold text-blue-600 dark:text-blue-400 text-xs">
-                  {degreeProgressPercent}%
+                <span className="font-extrabold text-blue-600 dark:text-blue-400 text-xs flex items-center space-x-1">
+                  <span>{degreeProgressPercent}%</span>
+                  <BarChart2 className="w-3 h-3 opacity-70" />
                 </span>
               </div>
               <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
@@ -413,7 +448,9 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
               </div>
               <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 <span>{completedCredits + totalPlannedCredits} / {totalDegreeCredits} Cr</span>
-                <span className="text-slate-400">Target: {totalDegreeCredits} Cr</span>
+                <span className="text-blue-600 dark:text-blue-400 font-semibold text-[10px]">
+                  {showGraduationAnalytics ? 'Hide Analytics ▲' : 'View Recharts ▼'}
+                </span>
               </div>
             </div>
 
@@ -499,6 +536,16 @@ export const TopStudentDashboardBar: React.FC<TopStudentDashboardBarProps> = ({
 
         </div>
       )}
+
+      {/* Completely Separate Section: Graduation Credit Requirement Analytics (Recharts) */}
+      <GraduationCreditProgressSection
+        studentProfile={studentProfile}
+        programmeRules={programmeRules}
+        selectedPlanCourseIds={selectedPlanCourseIds}
+        totalPlannedCredits={totalPlannedCredits}
+        isOpen={showGraduationAnalytics}
+        onToggle={() => setShowGraduationAnalytics(prev => !prev)}
+      />
 
     </div>
   );
